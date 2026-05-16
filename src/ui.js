@@ -46,6 +46,7 @@ function setupEventListeners() {
     els.langSelect.onchange = (e) => {
         currentLang = e.target.value;
         updateCode();
+        refreshStack();
     };
 
     els.btnPlay.onclick = () => {
@@ -169,13 +170,8 @@ function updateStack(node, type) {
     if (type === 'enter') {
         const frame = document.createElement('div');
         frame.className = 'stack-frame';
-        
-        let funcName = currentTraversal;
-        if (currentLang === 'csharp') {
-            funcName = currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1);
-        }
-        
-        frame.textContent = `${funcName}(${node.value})`;
+        frame.dataset.nodeValue = node.value;
+        frame.textContent = getStackLabel(node.value);
         els.stackDisplay.appendChild(frame);
     } else if (type === 'exit') {
         const frames = els.stackDisplay.querySelectorAll('.stack-frame');
@@ -185,6 +181,23 @@ function updateStack(node, type) {
             setTimeout(() => lastFrame.remove(), 200);
         }
     }
+}
+
+function getStackLabel(val) {
+    let funcName = currentTraversal;
+    if (currentLang === 'csharp') {
+        funcName = currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1);
+    }
+    return `${funcName}(${val})`;
+}
+
+function refreshStack() {
+    const frames = els.stackDisplay.querySelectorAll('.stack-frame');
+    frames.forEach(frame => {
+        if (frame.dataset.nodeValue) {
+            frame.textContent = getStackLabel(frame.dataset.nodeValue);
+        }
+    });
 }
 
 function updateCode() {
