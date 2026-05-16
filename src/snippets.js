@@ -216,22 +216,29 @@ function serializeTree(tree, lang, maxChildren) {
     if (!tree.root) return lang === 'python' ? 'None' : 'null';
     
     const serializeNode = (node) => {
-        const childStrs = node.children.map(c => serializeNode(c));
-        
-        if (maxChildren <= 2) {
-            const left = childStrs[0] || (lang === 'python' ? 'None' : 'null');
-            const right = childStrs[1] || (lang === 'python' ? 'None' : 'null');
-            if (lang === 'js') return `new Node(${node.value}, ${left}, ${right})`;
-            if (lang === 'python') return `Node(${node.value}, ${left}, ${right})`;
-            if (lang === 'csharp') return `new Node(${node.value}, ${left}, ${right})`;
-        } else if (maxChildren === 3) {
-            const left = childStrs[0] || (lang === 'python' ? 'None' : 'null');
-            const middle = childStrs[1] || (lang === 'python' ? 'None' : 'null');
-            const right = childStrs[2] || (lang === 'python' ? 'None' : 'null');
-            if (lang === 'js') return `new Node(${node.value}, ${left}, ${middle}, ${right})`;
-            if (lang === 'python') return `Node(${node.value}, ${left}, ${middle}, ${right})`;
-            if (lang === 'csharp') return `new Node(${node.value}, ${left}, ${middle}, ${right})`;
+        if (maxChildren <= 3) {
+            const childLimit = maxChildren === 3 ? 3 : 2;
+            let children = [];
+            for (let i = 0; i < childLimit; i++) {
+                children.push(node.children[i] ? serializeNode(node.children[i]) : null);
+            }
+            
+            // Map nulls to language-specific strings
+            let childArgs = children.map(c => c || (lang === 'python' ? 'None' : 'null'));
+            
+            // Trim trailing nulls
+            while (childArgs.length > 0 && childArgs[childArgs.length - 1] === (lang === 'python' ? 'None' : 'null')) {
+                childArgs.pop();
+            }
+            
+            const args = [node.value, ...childArgs];
+            const prefix = lang === 'python' ? '' : 'new ';
+            return `${prefix}Node(${args.join(', ')})`;
         } else {
+            const childStrs = node.children.map(c => serializeNode(c));
+            if (childStrs.length === 0) {
+                return lang === 'python' ? `Node(${node.value})` : `new Node(${node.value})`;
+            }
             if (lang === 'js') return `new Node(${node.value}, [${childStrs.join(', ')}])`;
             if (lang === 'python') return `Node(${node.value}, [${childStrs.join(', ')}])`;
             if (lang === 'csharp') return `new Node(${node.value}, new List<Node> { ${childStrs.join(', ')} })`;

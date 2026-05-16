@@ -46,28 +46,36 @@ function setupEventListeners() {
     };
 
     els.minDepth.oninput = (e) => {
-        if (parseInt(e.target.value) > parseInt(els.maxDepth.value)) {
-            els.maxDepth.value = e.target.value;
+        const val = parseInt(e.target.value);
+        const maxVal = parseInt(els.maxDepth.value);
+        if (val > maxVal) {
+            els.maxDepth.value = val;
         }
         updateRanges();
     };
     els.maxDepth.oninput = (e) => {
-        if (parseInt(e.target.value) < parseInt(els.minDepth.value)) {
-            els.minDepth.value = e.target.value;
+        const val = parseInt(e.target.value);
+        const minVal = parseInt(els.minDepth.value);
+        if (val < minVal) {
+            els.minDepth.value = val;
         }
         updateRanges();
     };
     els.minChild.oninput = (e) => {
-        if (parseInt(e.target.value) > parseInt(els.maxChild.value)) {
-            els.maxChild.value = e.target.value;
+        const val = parseInt(e.target.value);
+        const maxVal = parseInt(els.maxChild.value);
+        if (val > maxVal) {
+            els.maxChild.value = val;
         }
         updateRanges();
         updateCode();
         refreshStack();
     };
     els.maxChild.oninput = (e) => {
-        if (parseInt(e.target.value) < parseInt(els.minChild.value)) {
-            els.minChild.value = e.target.value;
+        const val = parseInt(e.target.value);
+        const minVal = parseInt(els.minChild.value);
+        if (val < minVal) {
+            els.minChild.value = val;
         }
         updateRanges();
         updateInOrderAvailability();
