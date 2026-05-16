@@ -7,35 +7,35 @@ let animator = null;
 let currentTraversal = 'preorder';
 let currentLang = 'js';
 
-const els = {
-    canvas: document.getElementById('tree-canvas'),
-    minDepth: document.getElementById('min-depth-slider'),
-    maxDepth: document.getElementById('max-depth-slider'),
-    minChild: document.getElementById('min-child-slider'),
-    maxChild: document.getElementById('max-child-slider'),
-    depthRange: document.getElementById('depth-range'),
-    childRange: document.getElementById('child-range'),
-    traversalSelect: document.getElementById('traversal-select'),
-    btnPlay: document.getElementById('btn-play'),
-    btnStep: document.getElementById('btn-step'),
-    btnReset: document.getElementById('btn-reset'),
-    speedSlider: document.getElementById('speed-slider'),
-    langSelect: document.getElementById('lang-select'),
-    codeDisplay: document.querySelector('#code-display code'),
-    stackDisplay: document.getElementById('stack-display'),
-    sequenceList: document.getElementById('sequence-list'),
-    checkFocus: document.getElementById('check-focus'),
-    resizerH: document.getElementById('resizer'),
-    resizerV: document.getElementById('v-resizer'),
-    codePanel: document.getElementById('code-panel'),
-    stackPanel: document.getElementById('stack-panel'),
-    insights: document.getElementById('insights')
-};
+const els = {};
 
 export function init() {
+    // Initialize elements inside init to ensure DOM is ready
+    els.canvas = document.getElementById('tree-canvas');
+    els.minDepth = document.getElementById('min-depth-slider');
+    els.maxDepth = document.getElementById('max-depth-slider');
+    els.minChild = document.getElementById('min-child-slider');
+    els.maxChild = document.getElementById('max-child-slider');
+    els.depthRange = document.getElementById('depth-range');
+    els.childRange = document.getElementById('child-range');
+    els.traversalSelect = document.getElementById('traversal-select');
+    els.btnPlay = document.getElementById('btn-play');
+    els.btnStep = document.getElementById('btn-step');
+    els.btnReset = document.getElementById('btn-reset');
+    els.speedSlider = document.getElementById('speed-slider');
+    els.langSelect = document.getElementById('lang-select');
+    els.codeDisplay = document.querySelector('#code-display code');
+    els.stackDisplay = document.getElementById('stack-display');
+    els.sequenceList = document.getElementById('sequence-list');
+    els.checkFocus = document.getElementById('check-focus');
+    els.resizerH = document.getElementById('resizer');
+    els.resizerV = document.getElementById('v-resizer');
+    els.codePanel = document.getElementById('code-panel');
+    els.stackPanel = document.getElementById('stack-panel');
+    els.insights = document.getElementById('insights');
+
     setupEventListeners();
     regenerate();
-    updateCode();
 }
 
 function setupEventListeners() {
@@ -44,28 +44,29 @@ function setupEventListeners() {
         els.childRange.textContent = `${els.minChild.value} - ${els.maxChild.value}`;
     };
 
-    els.minDepth.oninput = (e) => {
+    els.minDepth.oninput = () => {
         if (parseInt(els.minDepth.value) > parseInt(els.maxDepth.value)) {
             els.maxDepth.value = els.minDepth.value;
         }
         updateRanges();
         regenerate();
     };
-    els.maxDepth.oninput = (e) => {
+    els.maxDepth.oninput = () => {
         if (parseInt(els.maxDepth.value) < parseInt(els.minDepth.value)) {
             els.minDepth.value = els.maxDepth.value;
         }
         updateRanges();
         regenerate();
     };
-    els.minChild.oninput = (e) => {
+    els.minChild.oninput = () => {
         if (parseInt(els.minChild.value) > parseInt(els.maxChild.value)) {
             els.maxChild.value = els.minChild.value;
         }
         updateRanges();
+        updateInOrderAvailability();
         regenerate();
     };
-    els.maxChild.oninput = (e) => {
+    els.maxChild.oninput = () => {
         if (parseInt(els.maxChild.value) < parseInt(els.minChild.value)) {
             els.minChild.value = els.maxChild.value;
         }
@@ -73,6 +74,7 @@ function setupEventListeners() {
         updateInOrderAvailability();
         regenerate();
     };
+    
     els.traversalSelect.onchange = (e) => {
         currentTraversal = e.target.value;
         reset();
@@ -94,7 +96,7 @@ function setupEventListeners() {
         }
         else if (animator.isPlaying) {
             animator.pause();
-            els.btnPlay.textContent = 'Play';
+            els.btnPlay.textContent = 'Resume';
         } else {
             animator.resume();
             els.btnPlay.textContent = 'Pause';
@@ -105,49 +107,15 @@ function setupEventListeners() {
         if (!animator || animator.isFinished) {
             els.sequenceList.innerHTML = '';
             startTraversal(true);
+        } else {
+            animator.manualStep();
         }
-        else animator.manualStep();
     };
 
     els.btnReset.onclick = reset;
-    
+
     els.speedSlider.oninput = (e) => {
-        if (animator) animator.setSpeed(e.target.value);
-    };
-
-    // Tree Config Listeners
-    const maxChildSlider = document.getElementById('max-child-slider');
-    const minChildSlider = document.getElementById('min-child-slider');
-    const traversalSelect = els.traversalSelect;
-
-    const updateInOrderAvailability = () => {
-        const maxVal = parseInt(maxChildSlider.value);
-        const inOrderOption = traversalSelect.querySelector('option[value="inorder"]');
-        
-        if (maxVal > 2) {
-            inOrderOption.disabled = true;
-            if (currentTraversal === 'inorder') {
-                currentTraversal = 'preorder';
-                traversalSelect.value = 'preorder';
-                reset();
-                updateCode();
-            }
-        } else {
-            inOrderOption.disabled = false;
-        }
-    };
-
-    maxChildSlider.oninput = (e) => {
-        document.getElementById('child-range').textContent = `${minChildSlider.value} - ${e.target.value}`;
-        updateInOrderAvailability();
-        updateCode();
-        refreshStack();
-    };
-
-    minChildSlider.oninput = (e) => {
-        document.getElementById('child-range').textContent = `${e.target.value} - ${maxChildSlider.value}`;
-        updateCode();
-        refreshStack();
+        if (animator) animator.setSpeed(parseInt(e.target.value));
     };
 
     // Horizontal Resizer
@@ -193,14 +161,29 @@ function setupEventListeners() {
 
     // Visibility Toggles
     document.getElementById('check-stack').onchange = (e) => {
-        document.getElementById('stack-panel').style.display = e.target.checked ? 'flex' : 'none';
+        els.stackPanel.style.display = e.target.checked ? 'flex' : 'none';
     };
     document.getElementById('check-code').onchange = (e) => {
-        document.getElementById('code-panel').style.display = e.target.checked ? 'flex' : 'none';
+        els.codePanel.style.display = e.target.checked ? 'flex' : 'none';
     };
 
-    // Initial check
     updateInOrderAvailability();
+}
+
+function updateInOrderAvailability() {
+    const maxChildren = parseInt(els.maxChild.value);
+    const inOrderOption = els.traversalSelect.querySelector('option[value="inorder"]');
+    
+    if (maxChildren > 2) {
+        inOrderOption.disabled = true;
+        if (currentTraversal === 'inorder') {
+            els.traversalSelect.value = 'preorder';
+            currentTraversal = 'preorder';
+            updateCode();
+        }
+    } else {
+        inOrderOption.disabled = false;
+    }
 }
 
 function regenerate() {
@@ -210,7 +193,6 @@ function regenerate() {
     const minC = parseInt(els.minChild.value);
     const maxC = parseInt(els.maxChild.value);
     
-    // Explicitly reset tree state before generation
     tree.nodes = [];
     tree.root = null;
 
@@ -219,35 +201,37 @@ function regenerate() {
         Math.min(minC, maxC), Math.max(minC, maxC)
     );
     tree.render(els.canvas);
-    
-    // Crucial: Update the code snippet to match the brand new tree
     updateCode();
 }
 
 function reset() {
     if (animator) animator.pause();
     animator = null;
-    els.btnPlay.textContent = 'Play';
-    els.sequenceList.innerHTML = '';
+    els.btnPlay.textContent = 'Start';
     els.stackDisplay.innerHTML = '';
-    document.querySelectorAll('.node').forEach(n => n.classList.remove('active', 'visited'));
-    updateCode();
+    els.sequenceList.innerHTML = '';
+    tree.nodes.forEach(n => { n.status = 'idle'; });
+    tree.render(els.canvas);
 }
 
 function startTraversal(manual = false) {
-    const genFunc = { preorder, inorder, postorder }[currentTraversal];
+    reset();
+    const strategy = currentTraversal === 'preorder' ? preorder : 
+                    (currentTraversal === 'inorder' ? inorder : postorder);
+    
     animator = new Animator({
         onStep: handleStep,
         onComplete: () => {
-            els.btnPlay.textContent = 'Play';
-            console.log('Traversal Complete');
+            els.btnPlay.textContent = 'Restart';
         }
     });
-    animator.setSpeed(els.speedSlider.value);
     
-    if (manual) animator.manualStep(genFunc(tree.root));
-    else {
-        animator.start(genFunc(tree.root));
+    animator.setSpeed(parseInt(els.speedSlider.value));
+    
+    if (manual) {
+        animator.manualStep(strategy(tree.root));
+    } else {
+        animator.start(strategy(tree.root));
         els.btnPlay.textContent = 'Pause';
     }
 }
@@ -255,98 +239,87 @@ function startTraversal(manual = false) {
 async function handleStep(step) {
     const { type, node, side } = step;
     
-    // Reset highlights
-    document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
-    
-    const nodeEl = document.getElementById(`node-${node.id}`);
-    nodeEl.classList.add('active');
-    
-    // Auto-scroll the visualization panel to keep the active node in view
-    nodeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    
-    if (type === 'visit') {
-        nodeEl.classList.add('visited');
-        addToSequence(node.value);
+    if (type === 'enter') {
+        node.status = 'active';
+        pushStack(node);
+    } else if (type === 'exit') {
+        node.status = 'visited';
+        popStack();
+    } else if (type === 'visit') {
+        const item = document.createElement('div');
+        item.className = 'sequence-item';
+        item.textContent = node.value;
+        els.sequenceList.appendChild(item);
+        
+        const currentFrame = els.stackDisplay.querySelector('.stack-frame.active');
+        if (currentFrame) {
+            const printRes = document.createElement('span');
+            printRes.className = 'print-result';
+            printRes.textContent = ` -> ${node.value}`;
+            currentFrame.appendChild(printRes);
+        }
     }
+
+    tree.render(els.canvas);
     
-    updateStack(node, type);
-    
-    // Highlight code line based on side
+    // Auto-scroll the active node into view
+    const activeNodeEl = document.querySelector(`[data-id="${node.id}"]`);
+    if (activeNodeEl) {
+        activeNodeEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    }
+
+    // Highlight code line
     const lineEls = els.codeDisplay.querySelectorAll('.code-line');
     lineEls.forEach(l => l.classList.remove('highlight'));
 
     const lines = Array.from(lineEls).map(el => el.textContent);
     
-    // Scoped search: find the start of the current function
     const funcNameNeedle = currentLang === 'csharp' 
         ? `${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(` 
         : `${currentTraversal}(`;
     const funcStart = lines.findIndex(l => l.includes(funcNameNeedle) && (l.includes('function') || l.includes('def') || l.includes('static void')));
     
     let targetIndex = -1;
-    
     if (type === 'visit') {
         targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine')));
-    } else if (side === 'left' || side === 'right' || side === 'middle') {
+    } else if (side) {
         const needle = side === 'left' ? '.left' : (side === 'right' ? '.right' : '.middle');
-        const capNeedle = needle.charAt(0) + needle.charAt(1).toUpperCase() + needle.slice(2); // .Left, .Middle, .Right
-        
+        const capNeedle = needle.charAt(0) + needle.charAt(1).toUpperCase() + needle.slice(2);
         targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes(needle) || l.includes(capNeedle)));
-        
         if (targetIndex === -1) {
-            // Fallback for loop-based snippets or generic calls within the function
-            targetIndex = lines.findIndex((l, i) => i >= funcStart && (
-                l.includes('children') || l.includes('child') || 
-                l.includes(funcNameNeedle)
-            ));
+            targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('children') || l.includes('child') || l.includes(funcNameNeedle)));
         }
     }
 
     if (targetIndex !== -1 && lineEls[targetIndex]) {
         lineEls[targetIndex].classList.add('highlight');
-        // Scroll highlight into view within the code panel
         lineEls[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
-function addToSequence(val) {
-    const item = document.createElement('div');
-    item.className = 'seq-item highlight-new';
-    item.textContent = val;
-    els.sequenceList.appendChild(item);
+function pushStack(node) {
+    const frame = document.createElement('div');
+    frame.className = 'stack-frame active';
+    frame.dataset.nodeValue = node.value;
+    frame.textContent = getStackLabel(node.value);
+    
+    const prevActive = els.stackDisplay.querySelector('.stack-frame.active');
+    if (prevActive) prevActive.classList.remove('active');
+    
+    els.stackDisplay.insertBefore(frame, els.stackDisplay.firstChild);
 }
 
-function updateStack(node, type) {
-    const frames = els.stackDisplay.querySelectorAll('.stack-frame');
-    const lastFrame = frames[frames.length - 1];
-
-    if (type === 'enter') {
-        const frame = document.createElement('div');
-        frame.className = 'stack-frame';
-        frame.dataset.nodeValue = node.value;
-        frame.textContent = getStackLabel(node.value);
-        els.stackDisplay.appendChild(frame);
-    } else if (type === 'visit') {
-        if (lastFrame) {
-            lastFrame.classList.add('active-visit');
-            const result = document.createElement('span');
-            result.className = 'print-result';
-            result.textContent = ` -> ${node.value}`;
-            lastFrame.appendChild(result);
-        }
-    } else if (type === 'exit') {
-        if (frames.length > 0) {
-            lastFrame.classList.add('exit-animation');
-            setTimeout(() => lastFrame.remove(), 200);
-        }
-    }
+function popStack() {
+    const top = els.stackDisplay.querySelector('.stack-frame');
+    if (top) top.remove();
+    const next = els.stackDisplay.querySelector('.stack-frame');
+    if (next) next.classList.add('active');
 }
 
 function getStackLabel(val) {
-    let funcName = currentTraversal;
-    if (currentLang === 'csharp') {
-        funcName = currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1);
-    }
+    const funcName = currentLang === 'csharp' 
+        ? currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)
+        : currentTraversal;
     return `${funcName}(${val})`;
 }
 
@@ -356,9 +329,7 @@ function refreshStack() {
         if (frame.dataset.nodeValue) {
             const printResult = frame.querySelector('.print-result');
             frame.textContent = getStackLabel(frame.dataset.nodeValue);
-            if (printResult) {
-                frame.appendChild(printResult);
-            }
+            if (printResult) frame.appendChild(printResult);
         }
     });
 }
