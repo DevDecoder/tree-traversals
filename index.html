@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Traversal Explorer | A-Level CS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <header>
+        <div class="logo">
+            <span class="pulse"></span>
+            <h1>Tree Traversal Explorer</h1>
+        </div>
+        <div class="header-actions">
+            <button id="btn-theme" class="btn-icon" title="Toggle Theme">🌓</button>
+            <a href="https://github.com/DevDecoder/tree-traversals" class="btn-secondary">GitHub</a>
+        </div>
+    </header>
+
+    <main>
+        <aside id="controls" class="glass">
+            <section class="control-group">
+                <h3>Tree Configuration</h3>
+                <div class="input-row">
+                    <label>Depth</label>
+                    <input type="range" id="depth-slider" min="2" max="5" value="3">
+                    <span id="depth-val">3</span>
+                </div>
+                <div class="input-row">
+                    <label>Max Children</label>
+                    <input type="range" id="child-slider" min="1" max="2" value="2">
+                    <span id="child-val">2</span>
+                </div>
+                <button id="btn-generate" class="btn-primary">Regenerate Tree</button>
+            </section>
+
+            <section class="control-group">
+                <h3>Algorithm</h3>
+                <select id="traversal-select">
+                    <option value="preorder">Pre-order (Root, L, R)</option>
+                    <option value="inorder">In-order (L, Root, R)</option>
+                    <option value="postorder">Post-order (L, R, Root)</option>
+                </select>
+                <div class="playback-controls">
+                    <button id="btn-play" class="btn-play">Play</button>
+                    <button id="btn-step" class="btn-secondary">Step</button>
+                    <button id="btn-reset" class="btn-secondary">Reset</button>
+                </div>
+                <div class="input-row">
+                    <label>Speed</label>
+                    <input type="range" id="speed-slider" min="1" max="10" value="5">
+                </div>
+            </section>
+
+            <section class="control-group">
+                <h3>Visibility</h3>
+                <div class="toggle-row">
+                    <label>Trace Line</label>
+                    <input type="checkbox" id="check-trace" checked>
+                </div>
+                <div class="toggle-row">
+                    <label>Call Stack</label>
+                    <input type="checkbox" id="check-stack" checked>
+                </div>
+                <div class="toggle-row">
+                    <label>Code Snippet</label>
+                    <input type="checkbox" id="check-code" checked>
+                </div>
+            </section>
+        </aside>
+
+        <section id="visualization">
+            <svg id="tree-canvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                <!-- SVG Content -->
+            </svg>
+            <div id="explorer-pulse"></div>
+        </section>
+
+        <aside id="insights" class="glass">
+            <div id="code-panel" class="panel">
+                <div class="panel-header">
+                    <h3>Code Snippet</h3>
+                    <select id="lang-select">
+                        <option value="js">Javascript</option>
+                        <option value="python">Python</option>
+                        <option value="csharp">C#</option>
+                    </select>
+                </div>
+                <pre id="code-display" class="jetbrains-mono"><code></code></pre>
+            </div>
+            <div id="stack-panel" class="panel">
+                <h3>Call Stack</h3>
+                <div id="stack-display">
+                    <!-- Stack frames -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer id="results-bar" class="glass">
+        <div class="results-container">
+            <span class="label">Sequence:</span>
+            <div id="sequence-list"></div>
+        </div>
+    </footer>
+
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
