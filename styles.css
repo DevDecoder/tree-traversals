@@ -234,6 +234,12 @@ select {
     to { transform: translateX(0); opacity: 1; }
 }
 
+.stack-frame.exit-animation {
+    transform: translateX(20px);
+    opacity: 0;
+    transition: all 0.2s ease-in;
+}
+
 #results-bar {
     height: 80px;
     margin: 0 1rem 1rem;

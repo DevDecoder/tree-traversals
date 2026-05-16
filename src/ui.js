@@ -166,14 +166,24 @@ function addToSequence(val) {
 }
 
 function updateStack(node, type) {
-    // Simple stack visualization logic
-    // In a real recursive viz, we'd track depth more accurately
-    if (type === 'visit') {
+    if (type === 'enter') {
         const frame = document.createElement('div');
         frame.className = 'stack-frame';
-        frame.textContent = `visit(${node.value})`;
+        
+        let funcName = currentTraversal;
+        if (currentLang === 'csharp') {
+            funcName = currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1);
+        }
+        
+        frame.textContent = `${funcName}(${node.value})`;
         els.stackDisplay.appendChild(frame);
-        setTimeout(() => frame.remove(), 1000); // Visual flair
+    } else if (type === 'exit') {
+        const frames = els.stackDisplay.querySelectorAll('.stack-frame');
+        if (frames.length > 0) {
+            const lastFrame = frames[frames.length - 1];
+            lastFrame.classList.add('exit-animation');
+            setTimeout(() => lastFrame.remove(), 200);
+        }
     }
 }
 
