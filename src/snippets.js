@@ -10,7 +10,6 @@ export function getSnippets(lang, traversal, tree, maxChildren, focusMode) {
     this.value = value;
     this.left = left;
     this.right = right;
-    this.children = [left, right].filter(c => c !== null);
   }
 }
 
@@ -22,7 +21,6 @@ const MODE = "${traversal.toUpperCase()}";
     this.left = left;
     this.middle = middle;
     this.right = right;
-    this.children = [left, middle, right].filter(c => c !== null);
   }
 }
 
@@ -62,7 +60,6 @@ else if (MODE === "POSTORDER") postorder(root);`
         self.value = value
         self.left = left
         self.right = right
-        self.children = [c for c in [left, right] if c is not None]
 
 root = ${serializedTree}
 MODE = "${traversal.toUpperCase()}"
@@ -72,7 +69,6 @@ MODE = "${traversal.toUpperCase()}"
         self.left = left
         self.middle = middle
         self.right = right
-        self.children = [c for c in [left, middle, right] if c is not None]
 
 root = ${serializedTree}
 MODE = "${traversal.toUpperCase()}"
@@ -104,21 +100,16 @@ elif MODE == "POSTORDER": postorder(root)`
         },
         csharp: {
             setup: isBinary ? `using System;
-using System.Collections.Generic;
 
 public class Node {
     public int Value { get; set; }
     public Node Left { get; set; }
     public Node Right { get; set; }
-    public List<Node> Children { get; set; }
 
     public Node(int value, Node left = null, Node right = null) {
         Value = value;
         Left = left;
         Right = right;
-        Children = new List<Node>();
-        if (left != null) Children.Add(left);
-        if (right != null) Children.Add(right);
     }
 }
 
@@ -127,24 +118,18 @@ class Program {
         Node root = ${serializedTree};
         string mode = "${traversal.toUpperCase()}";
 ` : isTernary ? `using System;
-using System.Collections.Generic;
 
 public class Node {
     public int Value { get; set; }
     public Node Left { get; set; }
     public Node Middle { get; set; }
     public Node Right { get; set; }
-    public List<Node> Children { get; set; }
 
     public Node(int value, Node left = null, Node middle = null, Node right = null) {
         Value = value;
         Left = left;
         Middle = middle;
         Right = right;
-        Children = new List<Node>();
-        if (left != null) Children.Add(left);
-        if (middle != null) Children.Add(middle);
-        if (right != null) Children.Add(right);
     }
 }
 
@@ -198,14 +183,19 @@ class Program {
     for (const [mName, mBody] of Object.entries(t.methods)) {
         if (mName === 'inorder' && !isBinary) continue;
         
+        let body = mBody;
         if (focusMode && mName !== traversal) {
-            // Collapsed version
-            if (lang === 'js') code += `function ${mName}(node) { /* ... */ }\n`;
-            else if (lang === 'python') code += `def ${mName}(node): pass # ...\n`;
-            else if (lang === 'csharp') code += `    static void ${mName.charAt(0).toUpperCase() + mName.slice(1)}(Node node) { /* ... */ }\n`;
-        } else {
-            code += mBody + "\n";
+            // Simple collapse: keep first line and closing brace
+            const lines = body.split('\n');
+            if (lang === 'python') {
+                body = lines[0] + "\n    pass";
+            } else if (lang === 'csharp') {
+                body = lines[0] + " { /* ... */ }";
+            } else {
+                body = lines[0] + " { /* ... */ }";
+            }
         }
+        code += body + "\n\n";
     }
     
     code += t.footer;
@@ -214,37 +204,42 @@ class Program {
 
 function serializeTree(tree, lang, maxChildren) {
     if (!tree.root) return lang === 'python' ? 'None' : 'null';
-    
-    const serializeNode = (node) => {
-        if (maxChildren <= 3) {
-            const childLimit = maxChildren === 3 ? 3 : 2;
-            let children = [];
-            for (let i = 0; i < childLimit; i++) {
-                children.push(node.children[i] ? serializeNode(node.children[i]) : null);
+
+    function serializeNode(node) {
+        const val = node.value;
+        if (maxChildren > 3) {
+            // N-ary: use array/list
+            if (node.children.length === 0) return `new Node(${val})`;
+            const childrenStr = node.children.map(c => serializeNode(c)).join(', ');
+            if (lang === 'python') {
+                return `Node(${val}, [${childrenStr}])`;
+            } else if (lang === 'csharp') {
+                return `new Node(${val}, new List<Node> { ${childrenStr} })`;
             }
+            return `new Node(${val}, [${childrenStr}])`;
+        } else {
+            // Binary or Ternary: use positional args
+            let args = [node.value];
             
-            // Map nulls to language-specific strings
-            let childArgs = children.map(c => c || (lang === 'python' ? 'None' : 'null'));
-            
-            // Trim trailing nulls
-            while (childArgs.length > 0 && childArgs[childArgs.length - 1] === (lang === 'python' ? 'None' : 'null')) {
-                childArgs.pop();
+            // Fill args up to maxChildren
+            for (let i = 0; i < maxChildren; i++) {
+                if (node.children[i]) {
+                    args.push(serializeNode(node.children[i]));
+                } else {
+                    args.push(lang === 'python' ? 'None' : 'null');
+                }
             }
-            
-            const args = [node.value, ...childArgs];
+
+            // Remove trailing nulls/Nones
+            const nullVal = lang === 'python' ? 'None' : 'null';
+            while (args.length > 1 && args[args.length - 1] === nullVal) {
+                args.pop();
+            }
+
             const prefix = lang === 'python' ? '' : 'new ';
             return `${prefix}Node(${args.join(', ')})`;
-        } else {
-            const childStrs = node.children.map(c => serializeNode(c));
-            if (childStrs.length === 0) {
-                return lang === 'python' ? `Node(${node.value})` : `new Node(${node.value})`;
-            }
-            if (lang === 'js') return `new Node(${node.value}, [${childStrs.join(', ')}])`;
-            if (lang === 'python') return `Node(${node.value}, [${childStrs.join(', ')}])`;
-            if (lang === 'csharp') return `new Node(${node.value}, new List<Node> { ${childStrs.join(', ')} })`;
         }
-        return "";
-    };
+    }
 
     return serializeNode(tree.root);
 }
