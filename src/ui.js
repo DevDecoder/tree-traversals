@@ -49,7 +49,10 @@ function setupEventListeners() {
     };
 
     els.btnPlay.onclick = () => {
-        if (!animator || animator.isFinished) startTraversal();
+        if (!animator || animator.isFinished) {
+            els.sequenceList.innerHTML = '';
+            startTraversal();
+        }
         else if (animator.isPlaying) {
             animator.pause();
             els.btnPlay.textContent = 'Play';
@@ -60,7 +63,10 @@ function setupEventListeners() {
     };
 
     els.btnStep.onclick = () => {
-        if (!animator || animator.isFinished) startTraversal(true);
+        if (!animator || animator.isFinished) {
+            els.sequenceList.innerHTML = '';
+            startTraversal(true);
+        }
         else animator.manualStep();
     };
 
@@ -68,6 +74,17 @@ function setupEventListeners() {
     
     els.speedSlider.oninput = (e) => {
         if (animator) animator.setSpeed(e.target.value);
+    };
+
+    // Visibility Toggles
+    document.getElementById('check-trace').onchange = (e) => {
+        // Trace line visibility handled in CSS or JS
+    };
+    document.getElementById('check-stack').onchange = (e) => {
+        document.getElementById('stack-panel').style.display = e.target.checked ? 'flex' : 'none';
+    };
+    document.getElementById('check-code').onchange = (e) => {
+        document.getElementById('code-panel').style.display = e.target.checked ? 'flex' : 'none';
     };
 }
 
@@ -120,7 +137,23 @@ async function handleStep(step) {
     }
     
     updateStack(node, type);
-    // highlightCodeLine(side); // Future enhancement
+    
+    // Highlight code line based on side
+    const lines = els.codeDisplay.textContent.split('\n');
+    let targetIndex = -1;
+    if (type === 'visit') {
+        targetIndex = lines.findIndex(l => l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine'));
+    } else if (side === 'left') {
+        targetIndex = lines.findIndex(l => l.includes('left'));
+    } else if (side === 'right') {
+        targetIndex = lines.findIndex(l => l.includes('right'));
+    }
+
+    if (targetIndex !== -1) {
+        const codeText = els.codeDisplay.textContent;
+        // Simple visual highlight by wrapping text? No, better to just update a line pointer
+        // For V1, we'll just log it or add a class to a line if we had line wrapping
+    }
 }
 
 function addToSequence(val) {
