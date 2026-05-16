@@ -150,9 +150,11 @@ async function handleStep(step) {
     }
 
     if (targetIndex !== -1) {
-        const codeText = els.codeDisplay.textContent;
-        // Simple visual highlight by wrapping text? No, better to just update a line pointer
-        // For V1, we'll just log it or add a class to a line if we had line wrapping
+        const lineEls = els.codeDisplay.querySelectorAll('.code-line');
+        lineEls.forEach(l => l.classList.remove('highlight'));
+        if (lineEls[targetIndex]) {
+            lineEls[targetIndex].classList.add('highlight');
+        }
     }
 }
 
@@ -177,5 +179,7 @@ function updateStack(node, type) {
 
 function updateCode() {
     const snippets = getSnippets(currentLang, currentTraversal);
-    els.codeDisplay.textContent = snippets;
+    els.codeDisplay.innerHTML = snippets.split('\n')
+        .map(line => `<span class="code-line">${line}</span>`)
+        .join('\n');
 }

@@ -195,6 +195,21 @@ select {
     font-size: 0.85rem;
     overflow: auto;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.code-line {
+    display: block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.code-line.highlight {
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--accent-color);
+    box-shadow: inset 3px 0 0 var(--accent-color);
 }
 
 #stack-display {
