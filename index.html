@@ -22,6 +22,11 @@
             <img src="assets/logo.svg" alt="DevDecoder Logo" class="logo-img">
             <h1>Tree Traversal Explorer</h1>
         </div>
+        <div class="playback-controls">
+            <button id="btn-play" class="btn-play">Play</button>
+            <button id="btn-step" class="btn-secondary">Step</button>
+            <button id="btn-reset" class="btn-secondary">Reset</button>
+        </div>
         <div class="header-actions">
             <button id="btn-theme" class="btn-icon" title="Toggle Theme">🌓</button>
             <a href="https://github.com/DevDecoder/tree-traversals" class="btn-secondary">GitHub</a>
@@ -72,11 +77,6 @@
                     <option value="inorder">In-order (L, Root, R)</option>
                     <option value="postorder">Post-order (L, R, Root)</option>
                 </select>
-                <div class="playback-controls">
-                    <button id="btn-play" class="btn-play">Play</button>
-                    <button id="btn-step" class="btn-secondary">Step</button>
-                    <button id="btn-reset" class="btn-secondary">Reset</button>
-                </div>
                 <div class="input-row">
                     <label>Speed</label>
                     <input type="range" id="speed-slider" min="1" max="30" value="10">
