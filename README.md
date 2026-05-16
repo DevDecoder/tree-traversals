@@ -26,8 +26,10 @@ You can customise the initial state of the application using URL parameters. Thi
 
 - `lang` — Set the initial language (e.g., `?lang=python`).
 - `categories` — Filter the language dropdown to show only languages matching the specified categories (comma-separated, e.g., `?categories=AQA,OCR`).
+- `settings` — Toggle the visibility of the settings (left) panel (`true` or `false`).
 - `code` — Toggle the visibility of the code panel (`true` or `false`).
 - `callStack` — Toggle the visibility of the call stack panel (`true` or `false`).
+- `sequence` — Toggle the visibility of the sequence bar (`true` or `false`).
 - `traceLine` — Toggle the code line tracing (`true` or `false`).
 - `focus` — Toggle focus mode, hiding boilerplate code (`true` or `false`).
 

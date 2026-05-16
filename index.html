@@ -25,11 +25,23 @@
         <div class="header-actions">
             <button id="btn-theme" class="btn-icon" title="Toggle Theme">🌓</button>
             <a href="https://github.com/DevDecoder/tree-traversals" class="btn-secondary">GitHub</a>
+            <div class="dropdown">
+                <button class="btn-secondary dropdown-toggle" id="btn-show-menu">Show ▾</button>
+                <div class="dropdown-menu" id="show-menu">
+                    <label class="dropdown-item"><input type="checkbox" id="check-settings" checked> Settings</label>
+                    <label class="dropdown-item"><input type="checkbox" id="check-code"> Code</label>
+                    <label class="dropdown-item"><input type="checkbox" id="check-stack" checked> Call Stack</label>
+                    <label class="dropdown-item"><input type="checkbox" id="check-sequence" checked> Sequence</label>
+                </div>
+            </div>
         </div>
     </header>
 
     <main>
         <aside id="controls" class="glass">
+            <div class="panel-header controls-header" style="justify-content: flex-end; padding: 10px; border-bottom: none; margin-bottom: -15px;">
+                <button id="btn-hide-settings" class="btn-icon" title="Hide Settings">×</button>
+            </div>
             <section class="control-group">
                 <div class="control-group-header">
                     <h3>Tree Configuration</h3>
@@ -71,17 +83,6 @@
                 </div>
             </section>
 
-            <section class="control-group">
-                <h3>Visibility</h3>
-
-                <div class="toggle-row">
-                    <label for="check-stack">Call Stack</label>
-                    <input type="checkbox" id="check-stack" checked>
-                </div>
-                <div class="toggle-row">
-                    <label for="check-code">Code</label>
-                    <input type="checkbox" id="check-code">
-                </div>
             </section>
         </aside>
 
@@ -138,10 +139,11 @@
     </main>
 
     <footer id="results-bar" class="glass">
-        <div class="results-container">
+        <div class="results-container" style="flex: 1;">
             <span class="label">Sequence:</span>
             <div id="sequence-list"></div>
         </div>
+        <button id="btn-hide-sequence" class="btn-icon" title="Hide Sequence" style="margin-left: 10px;">×</button>
     </footer>
 
     <script type="module" src="src/main.js"></script>

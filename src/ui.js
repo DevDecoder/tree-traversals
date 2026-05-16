@@ -31,14 +31,20 @@ export function init() {
     els.codeDisplay = document.querySelector('#code-display code');
     els.stackDisplay = document.getElementById('stack-display');
     els.sequenceList = document.getElementById('sequence-list');
+    els.checkSettings = document.getElementById('check-settings');
+    els.checkSequence = document.getElementById('check-sequence');
     els.checkCode = document.getElementById('check-code');
     els.checkStack = document.getElementById('check-stack');
     els.checkTrace = document.getElementById('check-trace');
     els.btnCopy = document.getElementById('btn-copy');
+    els.btnHideSettings = document.getElementById('btn-hide-settings');
+    els.btnHideSequence = document.getElementById('btn-hide-sequence');
     els.btnHideCode = document.getElementById('btn-hide-code');
     els.btnHideStack = document.getElementById('btn-hide-stack');
     els.resizerH = document.getElementById('resizer');
     els.resizerV = document.getElementById('v-resizer');
+    els.controls = document.getElementById('controls');
+    els.resultsBar = document.getElementById('results-bar');
     els.codePanel = document.getElementById('code-panel');
     els.stackPanel = document.getElementById('stack-panel');
     els.insights = document.getElementById('insights');
@@ -121,6 +127,8 @@ async function loadManifest() {
         if (urlParams.has('traceLine')) els.checkTrace.checked = urlParams.get('traceLine') === 'true';
         if (urlParams.has('callStack')) els.checkStack.checked = urlParams.get('callStack') === 'true';
         if (urlParams.has('focus')) els.checkFocus.checked = urlParams.get('focus') === 'true';
+        if (urlParams.has('settings')) els.checkSettings.checked = urlParams.get('settings') === 'true';
+        if (urlParams.has('sequence')) els.checkSequence.checked = urlParams.get('sequence') === 'true';
         
         // Validate against loaded languages
         const langExists = manifest.languages.some(l => l.id === targetLang);
@@ -238,6 +246,8 @@ function setupEventListeners() {
         await updateCode();
     };
 
+    els.checkSettings.onchange = () => updateVisibility();
+    els.checkSequence.onchange = () => updateVisibility();
     els.checkCode.onchange = () => updateVisibility();
     els.checkStack.onchange = () => updateVisibility();
     els.checkTrace.onchange = () => {
@@ -246,8 +256,23 @@ function setupEventListeners() {
             lineEls.forEach(l => l.classList.remove('highlight'));
         }
     };
+    els.btnHideSettings.onclick = () => { els.checkSettings.checked = false; updateVisibility(); };
+    els.btnHideSequence.onclick = () => { els.checkSequence.checked = false; updateVisibility(); };
     els.btnHideCode.onclick = () => { els.checkCode.checked = false; updateVisibility(); };
     els.btnHideStack.onclick = () => { els.checkStack.checked = false; updateVisibility(); };
+    
+    const btnShowMenu = document.getElementById('btn-show-menu');
+    if (btnShowMenu) {
+        btnShowMenu.onclick = (e) => {
+            const menu = document.getElementById('show-menu');
+            menu.classList.toggle('show');
+            e.stopPropagation();
+        };
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('show-menu');
+            if (menu && !menu.contains(e.target)) menu.classList.remove('show');
+        });
+    }
 
     // Initial visibility
     updateVisibility();
@@ -581,9 +606,13 @@ function refreshStack() {
 }
 
 function updateVisibility() {
+    const showSettings = els.checkSettings.checked;
+    const showSequence = els.checkSequence.checked;
     const showCode = els.checkCode.checked;
     const showStack = els.checkStack.checked;
     
+    els.controls.classList.toggle('hidden', !showSettings);
+    els.resultsBar.classList.toggle('hidden', !showSequence);
     els.codePanel.classList.toggle('hidden', !showCode);
     els.stackPanel.classList.toggle('hidden', !showStack);
     
