@@ -394,12 +394,18 @@ select {
 }
 
 .node.active {
-    stroke: var(--accent-color);
-    filter: drop-shadow(0 0 5px var(--accent-color));
+    stroke: #ff4757;
+    fill: #ff4757; /* Fill with red too for maximum visibility */
+    filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.8));
+}
+
+.node.active + .node-label {
+    fill: white;
 }
 
 .node.visited {
-    fill: rgba(56, 189, 248, 0.2);
+    fill: var(--node-bg); /* Keep it opaque to hide the edges */
+    stroke: var(--accent-color);
 }
 
 .edge {

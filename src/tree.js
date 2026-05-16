@@ -5,7 +5,7 @@ export class Node {
         this.children = [];
         this.x = 0;
         this.y = 0;
-        this.depth = 0;
+        this.status = 'idle'; // idle, active, visited
     }
 }
 
@@ -13,36 +13,25 @@ export class Tree {
     constructor() {
         this.root = null;
         this.nodes = [];
+        this.currentWidth = 800;
+        this.currentHeight = 600;
     }
 
-    generateRandom(minDepth, maxDepth, minChildren, maxChildren) {
+    generateRandom(minDepth = 2, maxDepth = 4, minChildren = 2, maxChildren = 2) {
         this.nodes = [];
-        let idCounter = 0;
+        let idCounter = 1;
 
         const createNode = (depth) => {
-            if (depth > maxDepth) return null;
-
-            const value = Math.floor(Math.random() * 100);
-            const node = new Node(idCounter++, value);
-            node.depth = depth;
+            const node = new Node(idCounter++, Math.floor(Math.random() * 90) + 10);
             this.nodes.push(node);
 
-            // Determine if this node should have children
-            let shouldHaveChildren = true;
-            if (depth >= maxDepth) {
-                shouldHaveChildren = false;
-            } else if (depth >= minDepth) {
-                shouldHaveChildren = Math.random() > 0.4;
-            }
-
-            if (shouldHaveChildren) {
-                const numChildren = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
+            if (depth < maxDepth) {
+                const numChildren = (depth < minDepth) ? maxChildren : Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
                 for (let i = 0; i < numChildren; i++) {
                     const child = createNode(depth + 1);
                     if (child) node.children.push(child);
                 }
             }
-
             return node;
         };
 
@@ -56,9 +45,8 @@ export class Tree {
         const baseWidth = 800;
         const baseHeight = 600;
         const minLeafSpacing = 60;
-        const minLevelHeight = 80;
+        const minLevelHeight = 100;
         
-        // 1. Calculate subtree width (number of leaves)
         const calculateSubtreeWidth = (node) => {
             if (node.children.length === 0) {
                 node.width = 1;
@@ -73,7 +61,6 @@ export class Tree {
         };
         const totalLeaves = calculateSubtreeWidth(this.root);
 
-        // 2. Find max depth
         let maxDepth = 0;
         const findMaxDepth = (node, depth) => {
             maxDepth = Math.max(maxDepth, depth);
@@ -81,14 +68,12 @@ export class Tree {
         };
         findMaxDepth(this.root, 1);
 
-        // 3. Determine dynamic dimensions
         this.currentWidth = Math.max(baseWidth, totalLeaves * minLeafSpacing);
         this.currentHeight = Math.max(baseHeight, maxDepth * minLevelHeight);
         
         const canvasWidth = this.currentWidth;
         const canvasHeight = this.currentHeight;
 
-        // 4. Proportional allocation
         const paddingX = 40;
         const topPadding = 60;
         const bottomPadding = 60;
@@ -113,10 +98,12 @@ export class Tree {
 
     render(svg) {
         svg.innerHTML = '';
-        svg.setAttribute('viewBox', `0 0 ${this.currentWidth || 800} ${this.currentHeight || 600}`);
-        svg.style.width = `${this.currentWidth || 800}px`;
-        svg.style.height = `${this.currentHeight || 600}px`;
-        if (!this.root) return;
+        // Explicitly set viewBox to match calculated dimensions
+        svg.setAttribute('viewBox', `0 0 ${this.currentWidth} ${this.currentHeight}`);
+        
+        // Layers to ensure edges are always behind nodes
+        const edgesLayer = this.createSVGElement('g', { class: 'edges-layer' }, svg);
+        const nodesLayer = this.createSVGElement('g', { class: 'nodes-layer' }, svg);
 
         const drawEdges = (node) => {
             if (!node) return;
@@ -126,14 +113,14 @@ export class Tree {
                     x2: child.x, y2: child.y,
                     class: 'edge',
                     id: `edge-${node.id}-${child.id}`
-                }, svg);
+                }, edgesLayer);
                 drawEdges(child);
             });
         };
 
         const drawNodes = (node) => {
             if (!node) return;
-            const group = this.createSVGElement('g', { class: 'node-group' }, svg);
+            const group = this.createSVGElement('g', { class: 'node-group' }, nodesLayer);
             
             this.createSVGElement('circle', {
                 cx: node.x, cy: node.y, r: 20,
