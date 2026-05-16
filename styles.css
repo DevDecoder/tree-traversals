@@ -230,6 +230,24 @@ select {
     animation: slide-in 0.3s ease-out;
 }
 
+.stack-frame.active-visit {
+    background: var(--primary-color);
+    border-color: #fff;
+    box-shadow: 0 0 15px var(--primary-color);
+    transform: scale(1.05);
+}
+
+.print-indicator {
+    font-size: 0.8rem;
+    margin-left: 8px;
+    animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 @keyframes slide-in {
     from { transform: translateX(20px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
@@ -269,11 +287,20 @@ select {
 
 .seq-item {
     padding: 4px 12px;
-    background: var(--accent-color);
-    color: var(--bg-color);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     font-weight: 600;
-    animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease;
+}
+
+.seq-item.highlight-new {
+    background: var(--accent-color);
+    color: var(--bg-color);
+    border-color: var(--accent-color);
+    animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 10px var(--accent-color);
 }
 
 @keyframes pop {

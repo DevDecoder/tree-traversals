@@ -161,22 +161,31 @@ async function handleStep(step) {
 
 function addToSequence(val) {
     const item = document.createElement('div');
-    item.className = 'seq-item';
+    item.className = 'seq-item highlight-new';
     item.textContent = val;
     els.sequenceList.appendChild(item);
 }
 
 function updateStack(node, type) {
+    const frames = els.stackDisplay.querySelectorAll('.stack-frame');
+    const lastFrame = frames[frames.length - 1];
+
     if (type === 'enter') {
         const frame = document.createElement('div');
         frame.className = 'stack-frame';
         frame.dataset.nodeValue = node.value;
         frame.textContent = getStackLabel(node.value);
         els.stackDisplay.appendChild(frame);
+    } else if (type === 'visit') {
+        if (lastFrame) {
+            lastFrame.classList.add('active-visit');
+            const indicator = document.createElement('span');
+            indicator.className = 'print-indicator';
+            indicator.textContent = ' 📄';
+            lastFrame.appendChild(indicator);
+        }
     } else if (type === 'exit') {
-        const frames = els.stackDisplay.querySelectorAll('.stack-frame');
         if (frames.length > 0) {
-            const lastFrame = frames[frames.length - 1];
             lastFrame.classList.add('exit-animation');
             setTimeout(() => lastFrame.remove(), 200);
         }
