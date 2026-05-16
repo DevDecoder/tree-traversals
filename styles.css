@@ -198,18 +198,25 @@ main {
 }
 
 #code-display {
-    background: rgba(0, 0, 0, 0.3) !important;
-    padding: 1rem 0 !important;
+    background: #1e1e1e !important; /* Base background matches atom-one-dark */
+    padding: 0 !important;
     margin: 0;
     font-size: 0.85rem;
     flex: 1;
-    overflow: auto; /* Scroll bar lives here */
-    display: block;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme="light"] #code-display {
+    background: #fafafa !important; /* Base background matches atom-one-light */
 }
 
 #code-display code {
-    display: inline-block; /* Allow it to be wider than container */
-    min-width: 100%;       /* But at least as wide as container */
+    display: inline-block;
+    min-width: 100%;
+    padding: 1rem 0; /* Move padding here so background extends */
+    background: inherit;
 }
 
 #stack-display {

@@ -559,8 +559,8 @@ async function updateCode() {
         window.hljs.highlightElement(els.codeDisplay);
     }
 
-    // Wrap lines for highlighting (join with empty string to avoid extra text-node newlines)
-    const lines = els.codeDisplay.innerHTML.split('\n');
+    // Wrap lines for highlighting
+    const lines = els.codeDisplay.innerHTML.trimEnd().split('\n');
     els.codeDisplay.innerHTML = lines
         .map(line => `<span class="code-line">${line || ' '}</span>`)
         .join('');
