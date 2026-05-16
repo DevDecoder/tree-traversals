@@ -182,20 +182,7 @@ class Program {
     
     for (const [mName, mBody] of Object.entries(t.methods)) {
         if (mName === 'inorder' && !isBinary) continue;
-        
-        let body = mBody;
-        if (focusMode && mName !== traversal) {
-            // Simple collapse: keep first line and closing brace
-            const lines = body.split('\n');
-            if (lang === 'python') {
-                body = lines[0] + "\n    pass";
-            } else if (lang === 'csharp') {
-                body = lines[0] + " { /* ... */ }";
-            } else {
-                body = lines[0] + " { /* ... */ }";
-            }
-        }
-        code += body + "\n\n";
+        code += mBody + "\n\n";
     }
     
     code += t.footer;

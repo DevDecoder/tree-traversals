@@ -87,8 +87,17 @@ main {
 #visualization {
     flex: 1;
     position: relative;
-    overflow: auto;
+    overflow: hidden; /* Prevent redundant scrollbars */
     background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tree-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 #resizer {
@@ -266,6 +275,18 @@ select {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    gap: 12px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-actions select {
+    margin-bottom: 0;
+    min-width: 120px;
 }
 
 #code-display {
@@ -290,6 +311,10 @@ select {
     background: rgba(56, 189, 248, 0.2);
     color: var(--accent-color);
     box-shadow: inset 3px 0 0 var(--accent-color);
+}
+
+.code-line.collapsed {
+    display: none;
 }
 
 #stack-display {

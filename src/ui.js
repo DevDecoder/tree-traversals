@@ -28,6 +28,7 @@ export function init() {
     els.stackDisplay = document.getElementById('stack-display');
     els.sequenceList = document.getElementById('sequence-list');
     els.checkFocus = document.getElementById('check-focus');
+    els.btnCopy = document.getElementById('btn-copy');
     els.resizerH = document.getElementById('resizer');
     els.resizerV = document.getElementById('v-resizer');
     els.codePanel = document.getElementById('code-panel');
@@ -88,6 +89,15 @@ function setupEventListeners() {
     };
 
     els.checkFocus.onchange = updateCode;
+
+    els.btnCopy.onclick = () => {
+        const code = getSnippets(currentLang, currentTraversal, tree, parseInt(els.maxChild.value), false);
+        navigator.clipboard.writeText(code).then(() => {
+            const originalText = els.btnCopy.textContent;
+            els.btnCopy.textContent = 'Copied!';
+            setTimeout(() => { els.btnCopy.textContent = originalText; }, 2000);
+        });
+    };
 
     els.btnPlay.onclick = () => {
         if (!animator || animator.isFinished) {
@@ -339,7 +349,38 @@ function updateCode() {
     const focusMode = els.checkFocus.checked;
     const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, focusMode);
     
-    els.codeDisplay.innerHTML = code.split('\n')
-        .map(line => `<span class="code-line">${line}</span>`)
-        .join('\n');
+    const lines = code.split('\n');
+    const funcNameNeedle = currentLang === 'csharp' 
+        ? `${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(` 
+        : `${currentTraversal}(`;
+
+    const otherMethods = ['preorder', 'inorder', 'postorder'].filter(m => m !== currentTraversal);
+    const otherMethodNeedles = otherMethods.map(m => currentLang === 'csharp' ? `${m.charAt(0).toUpperCase() + m.slice(1)}(` : `${m}(`);
+
+    let isCollapsed = false;
+    
+    els.codeDisplay.innerHTML = lines.map(line => {
+        const trimmed = line.trim();
+        
+        // Detect start of an "other" method
+        if (focusMode) {
+            if (otherMethodNeedles.some(n => trimmed.includes(n) && (trimmed.includes('function') || trimmed.includes('def') || trimmed.includes('static void')))) {
+                isCollapsed = true;
+            }
+        }
+
+        const className = `code-line${isCollapsed ? ' collapsed' : ''}`;
+        
+        // Detect end of method (closing brace or return/end of block)
+        if (isCollapsed) {
+            if (trimmed === '}' || (currentLang === 'python' && trimmed === '' && line !== '')) {
+                // Keep the closing brace/last line but stop collapsing after it
+                const result = `<span class="${className}">${line}</span>`;
+                isCollapsed = false;
+                return result;
+            }
+        }
+
+        return `<span class="${className}">${line}</span>`;
+    }).join('\n');
 }

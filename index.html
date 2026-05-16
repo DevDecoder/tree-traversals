@@ -96,11 +96,14 @@
             <div id="code-panel" class="panel">
                 <div class="panel-header">
                     <h3>Code Snippet</h3>
-                    <select id="lang-select">
-                        <option value="js">Javascript</option>
-                        <option value="python">Python</option>
-                        <option value="csharp">C#</option>
-                    </select>
+                    <div class="header-actions">
+                        <select id="lang-select">
+                            <option value="js">Javascript</option>
+                            <option value="python">Python</option>
+                            <option value="csharp">C#</option>
+                        </select>
+                        <button id="btn-copy" class="btn-secondary">Copy</button>
+                    </div>
                 </div>
                 <pre id="code-display" class="jetbrains-mono"><code></code></pre>
             </div>
