@@ -1,2 +1,87 @@
-# tree-traversals
-Demonstrate the various tree traversals.
+# Tree Traversal Explorer
+
+An interactive, visual explorer for binary and n-ary tree traversal algorithms, designed for A-Level Computer Science students and anyone learning tree traversals for the first time.
+
+🚀 **[Live demo →](https://devdecoder.github.io/tree-traversals/)**
+
+---
+
+## Features
+
+- **Three traversal algorithms** — Pre-order (Root, L, R), In-order (L, Root, R), Post-order (L, R, Root)
+- **Animated step-by-step playback** with adjustable speed
+- **Manual stepping** — click once to advance one step, hold to auto-step at the current speed
+- **Configurable tree** — set min/max depth and min/max children per node; regenerate instantly with the ↻ button
+- **Live code panel** — syntax-highlighted pseudocode in JavaScript, Python, or C#, with the active line highlighted as the traversal runs
+- **Call stack panel** — real-time call stack visualisation showing recursive calls and their return values
+- **Sequence bar** — the visited node sequence builds up as the traversal progresses
+- **Dark / light theme toggle**
+- **Resizable panels** — drag the dividers to customise the layout; hide the Code or Call Stack panels independently
+
+---
+
+## Running locally (self-hosting)
+
+No build step is required — this is a plain HTML/CSS/JS application.
+
+### Option 1 — `npx serve` (recommended)
+
+```bash
+git clone https://github.com/DevDecoder/tree-traversals.git
+cd tree-traversals
+npx serve .
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Option 2 — Python simple server
+
+```bash
+git clone https://github.com/DevDecoder/tree-traversals.git
+cd tree-traversals
+python3 -m http.server 8080
+```
+
+Then open [http://localhost:8080](http://localhost:8080).
+
+### Option 3 — VS Code Live Server
+
+Install the [Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer), open the repo folder, and click **Go Live** in the status bar.
+
+> **Note:** The app uses ES modules (`type="module"`), so it must be served over HTTP — opening `index.html` directly as a `file://` URL will not work.
+
+---
+
+## Project structure
+
+```
+tree-traversals/
+├── index.html          # Application shell
+├── styles.css          # All styling
+└── src/
+    ├── main.js         # Entry point
+    ├── ui.js           # UI controller — event handling, panel visibility, animation loop
+    ├── tree.js         # Tree data structure and SVG renderer
+    ├── traversal.js    # Generator-based traversal algorithms and Animator class
+    └── snippets.js     # Code snippet templates (JS / Python / C#)
+```
+
+---
+
+## Deploying to GitHub Pages
+
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically deploys the `main` branch to GitHub Pages on every push.
+
+To enable it for a fork:
+
+1. Go to **Settings → Pages** in your repository.
+2. Set **Source** to **GitHub Actions**.
+3. Push any change to `main` — the workflow will build and deploy automatically.
+
+The live site will be available at `https://<your-username>.github.io/<repo-name>/`.
+
+---
+
+## Licence
+
+[MIT](LICENSE)

@@ -35,7 +35,7 @@ body {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border-radius: 0;
 }
 
 header {
@@ -175,7 +175,42 @@ main {
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+.control-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 1rem;
+}
+
+.btn-regenerate {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s, border-color 0.2s, transform 0.3s;
+}
+
+.btn-regenerate:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-regenerate.spinning {
+    animation: spin-once 0.4s ease-out;
+}
+
+@keyframes spin-once {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
 
 .input-row, .toggle-row {
@@ -212,7 +247,7 @@ input[type="range"] {
     background: var(--accent-color);
     color: var(--bg-color);
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -228,10 +263,19 @@ input[type="range"] {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
     color: white;
-    border-radius: 6px;
+    border-radius: 0;
     cursor: pointer;
     text-decoration: none;
     font-size: 0.9rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:active,
+#btn-step:active,
+#btn-reset:active {
+    background: #10b981 !important;
+    color: #020617 !important;
+    border-color: #10b981 !important;
 }
 
 .playback-controls {
@@ -245,12 +289,18 @@ input[type="range"] {
 }
 
 .btn-play {
-    background: #10b981;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 0.5rem;
     cursor: pointer;
+    transition: background 0.2s;
+    /* Default (Start / Restart) = green — action starts playback */
+    background: #10b981;
+}
+
+.btn-play--paused {
+    background: var(--accent-color); /* blue — indicates paused, click to resume */
 }
 
 select {
@@ -259,7 +309,7 @@ select {
     color: white;
     border: 1px solid var(--glass-border);
     padding: 0.5rem;
-    border-radius: 6px;
+    border-radius: 0;
     margin-bottom: 1rem;
 }
 
@@ -292,7 +342,7 @@ select {
 #code-display {
     background: rgba(0, 0, 0, 0.3);
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.85rem;
     overflow: auto;
     flex: 1;
@@ -303,7 +353,7 @@ select {
 .code-line {
     display: block;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 0;
     transition: all 0.2s;
 }
 
@@ -326,7 +376,7 @@ select {
     padding: 8px 12px;
     background: rgba(56, 189, 248, 0.1);
     border-left: 3px solid var(--accent-color);
-    border-radius: 4px;
+    border-radius: 0;
     font-size: 0.85rem;
     font-family: var(--font-mono);
     animation: slide-in 0.3s ease-out;
@@ -360,8 +410,11 @@ select {
 
 #results-bar {
     height: 80px;
-    margin: 0 1rem 1rem;
-    padding: 0 2rem;
+    margin: 0;
+    padding: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
     display: flex;
     align-items: center;
 }
@@ -389,7 +442,7 @@ select {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+    border-radius: 0;
     font-weight: 600;
     transition: all 0.3s ease;
 }
@@ -455,7 +508,7 @@ select {
     cursor: pointer;
     font-size: 1.2rem;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -467,10 +520,6 @@ select {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.panel.hidden {
-    display: none !important;
-}
-
-#v-resizer.hidden {
+.hidden {
     display: none !important;
 }

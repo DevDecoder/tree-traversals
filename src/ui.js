@@ -37,9 +37,16 @@ export function init() {
     els.codePanel = document.getElementById('code-panel');
     els.stackPanel = document.getElementById('stack-panel');
     els.insights = document.getElementById('insights');
+    els.btnRegenerate = document.getElementById('btn-regenerate');
 
     setupEventListeners();
     regenerate();
+}
+
+// Syncs the Play button's label AND colour class with the current state.
+function syncPlayButton(label) {
+    els.btnPlay.textContent = label;
+    els.btnPlay.classList.toggle('btn-play--paused', label === 'Resume');
 }
 
 function setupEventListeners() {
@@ -109,30 +116,88 @@ function setupEventListeners() {
     };
 
     els.btnPlay.onclick = () => {
-        console.log("Play button clicked");
         if (!animator || animator.isFinished) {
             els.sequenceList.innerHTML = '';
             startTraversal();
         }
         else if (animator.isPlaying) {
             animator.pause();
-            els.btnPlay.textContent = 'Resume';
+            syncPlayButton('Resume');
         } else {
             animator.resume();
-            els.btnPlay.textContent = 'Pause';
+            syncPlayButton('Pause');
         }
     };
 
-    els.btnStep.onclick = () => {
+    // Step: single click → one step; hold → continuous stepping at speed
+    let holdStepTimer = null;
+
+    function doStep() {
         if (!animator || animator.isFinished) {
             els.sequenceList.innerHTML = '';
             startTraversal(true);
-        } else {
-            animator.manualStep();
+            return;
         }
+        if (animator.isPlaying) {
+            animator.pause();
+            syncPlayButton('Resume');
+        }
+        animator.manualStep();
+    }
+
+    function startHoldStep() {
+        const scheduleNext = () => {
+            if (holdStepTimer === null) return; // cancelled
+            const delay = animator ? animator.speed : 500;
+            holdStepTimer = setTimeout(() => {
+                if (!animator || animator.isFinished) {
+                    stopHoldStep();
+                    return;
+                }
+                animator.manualStep();
+                scheduleNext();
+            }, delay);
+        };
+        holdStepTimer = true; // mark as active before first tick
+        scheduleNext();
+    }
+
+    function stopHoldStep() {
+        if (holdStepTimer !== null) {
+            clearTimeout(holdStepTimer);
+            holdStepTimer = null;
+        }
+    }
+
+    // How long the user must hold before continuous stepping begins (ms)
+    const HOLD_THRESHOLD = 400;
+    let holdStepStartTimer = null;
+
+    els.btnStep.addEventListener('mousedown', () => {
+        doStep(); // immediate single step on press
+        holdStepStartTimer = setTimeout(() => {
+            startHoldStep();
+        }, HOLD_THRESHOLD);
+    });
+
+    const cancelHold = () => {
+        clearTimeout(holdStepStartTimer);
+        holdStepStartTimer = null;
+        stopHoldStep();
     };
 
+    els.btnStep.addEventListener('mouseup', cancelHold);
+    els.btnStep.addEventListener('mouseleave', cancelHold);
+
     els.btnReset.onclick = reset;
+
+    els.btnRegenerate.addEventListener('click', () => {
+        els.btnRegenerate.classList.add('spinning');
+        els.btnRegenerate.addEventListener('animationend', () => {
+            els.btnRegenerate.classList.remove('spinning');
+        }, { once: true });
+        regenerate();
+    });
 
     els.speedSlider.oninput = (e) => {
         if (animator) animator.setSpeed(parseInt(e.target.value));
@@ -179,14 +244,6 @@ function setupEventListeners() {
         document.body.style.cursor = 'default';
     });
 
-    // Visibility Toggles
-    document.getElementById('check-stack').onchange = (e) => {
-        els.stackPanel.style.display = e.target.checked ? 'flex' : 'none';
-    };
-    document.getElementById('check-code').onchange = (e) => {
-        els.codePanel.style.display = e.target.checked ? 'flex' : 'none';
-    };
-
     updateInOrderAvailability();
 }
 
@@ -227,7 +284,7 @@ function regenerate() {
 function reset() {
     if (animator) animator.pause();
     animator = null;
-    els.btnPlay.textContent = 'Start';
+    syncPlayButton('Start');
     els.stackDisplay.innerHTML = '';
     els.sequenceList.innerHTML = '';
     tree.nodes.forEach(n => { n.status = 'idle'; });
@@ -242,7 +299,7 @@ function startTraversal(manual = false) {
     animator = new Animator({
         onStep: handleStep,
         onComplete: () => {
-            els.btnPlay.textContent = 'Restart';
+            syncPlayButton('Restart');
         }
     });
     
@@ -252,7 +309,7 @@ function startTraversal(manual = false) {
         animator.manualStep(strategy(tree.root));
     } else {
         animator.start(strategy(tree.root));
-        els.btnPlay.textContent = 'Pause';
+        syncPlayButton('Pause');
     }
 }
 
@@ -358,19 +415,15 @@ function updateVisibility() {
     const showCode = els.checkCode.checked;
     const showStack = els.checkStack.checked;
     
-    console.log('Visibility update:', { showCode, showStack });
-
     els.codePanel.classList.toggle('hidden', !showCode);
     els.stackPanel.classList.toggle('hidden', !showStack);
-
+    
     // If only one is shown, it must take full height
     if (showCode && !showStack) {
         els.codePanel.style.flex = '1';
     } else if (!showCode && showStack) {
         els.stackPanel.style.flex = '1';
     } else if (showCode && showStack) {
-        // If both are shown, restore a 50/50 split if no flex was set, 
-        // or keep existing flex if it was adjusted by resizer
         if (!els.codePanel.style.flex || els.codePanel.style.flex === '1') {
             els.codePanel.style.flex = '1';
             els.stackPanel.style.flex = '1';
@@ -380,8 +433,10 @@ function updateVisibility() {
     // Hide vertical resizer if either panel is hidden
     els.resizerV.classList.toggle('hidden', !showCode || !showStack);
     
-    // If both are hidden, the insights panel can stay empty or we could hide it
-    // For now, let's keep it so the user can see the background
+    // If both are hidden, hide the entire insights panel and horizontal resizer
+    const showInsights = showCode || showStack;
+    els.insights.classList.toggle('hidden', !showInsights);
+    els.resizerH.classList.toggle('hidden', !showInsights);
 }
 
 function updateCode() {

@@ -25,19 +25,22 @@
     <main>
         <aside id="controls" class="glass">
             <section class="control-group">
-                <h3>Tree Configuration</h3>
+                <div class="control-group-header">
+                    <h3>Tree Configuration</h3>
+                    <button id="btn-regenerate" class="btn-regenerate" title="Regenerate tree">↻</button>
+                </div>
                 <div class="input-row">
                     <label>Depth</label>
                     <div class="range-controls">
-                        <input type="range" id="min-depth-slider" min="2" max="5" value="2" title="Min Depth">
-                        <input type="range" id="max-depth-slider" min="2" max="5" value="3" title="Max Depth">
+                        <input type="range" id="min-depth-slider" min="1" max="5" value="2" title="Min Depth">
+                        <input type="range" id="max-depth-slider" min="1" max="5" value="3" title="Max Depth">
                     </div>
                     <span id="depth-range">2 - 3</span>
                 </div>
                 <div class="input-row">
                     <label>Children</label>
                     <div class="range-controls">
-                        <input type="range" id="min-child-slider" min="2" max="6" value="2" title="Min Children">
+                        <input type="range" id="min-child-slider" min="1" max="6" value="2" title="Min Children">
                         <input type="range" id="max-child-slider" min="2" max="6" value="2" title="Max Children">
                     </div>
                     <span id="child-range">2 - 2</span>
