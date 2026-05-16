@@ -86,16 +86,47 @@ function setupEventListeners() {
         if (animator) animator.setSpeed(e.target.value);
     };
 
-    // Visibility Toggles
-    document.getElementById('check-trace').onchange = (e) => {
-        // Trace line visibility handled in CSS or JS
+    // Tree Config Listeners
+    const maxChildSlider = document.getElementById('max-child-slider');
+    const minChildSlider = document.getElementById('min-child-slider');
+    const traversalSelect = els.traversalSelect;
+
+    const updateInOrderAvailability = () => {
+        const maxVal = parseInt(maxChildSlider.value);
+        const inOrderOption = traversalSelect.querySelector('option[value="inorder"]');
+        
+        if (maxVal > 2) {
+            inOrderOption.disabled = true;
+            if (currentTraversal === 'inorder') {
+                currentTraversal = 'preorder';
+                traversalSelect.value = 'preorder';
+                reset();
+                updateCode();
+            }
+        } else {
+            inOrderOption.disabled = false;
+        }
     };
+
+    maxChildSlider.oninput = (e) => {
+        document.getElementById('child-range').textContent = `${minChildSlider.value} - ${e.target.value}`;
+        updateInOrderAvailability();
+    };
+
+    minChildSlider.oninput = (e) => {
+        document.getElementById('child-range').textContent = `${e.target.value} - ${maxChildSlider.value}`;
+    };
+
+    // Visibility Toggles
     document.getElementById('check-stack').onchange = (e) => {
         document.getElementById('stack-panel').style.display = e.target.checked ? 'flex' : 'none';
     };
     document.getElementById('check-code').onchange = (e) => {
         document.getElementById('code-panel').style.display = e.target.checked ? 'flex' : 'none';
     };
+
+    // Initial check
+    updateInOrderAvailability();
 }
 
 function regenerate() {
@@ -167,12 +198,19 @@ async function handleStep(step) {
     if (type === 'visit') {
         targetIndex = lines.findIndex(l => l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine'));
     } else if (side === 'left' || side === 'right' || side === 'middle') {
-        // Find line with function call or loop
-        targetIndex = lines.findIndex(l => 
-            l.includes(`${currentTraversal}(`) || 
-            l.includes(`${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(`) ||
-            l.includes('children') || l.includes('child')
-        );
+        const needle = side === 'left' ? '.left' : (side === 'right' ? '.right' : '.middle');
+        const capNeedle = needle.charAt(0) + needle.charAt(1).toUpperCase() + needle.slice(2); // .Left, .Middle, .Right
+        
+        targetIndex = lines.findIndex(l => l.includes(needle) || l.includes(capNeedle));
+        
+        if (targetIndex === -1) {
+            // Fallback for loop-based snippets or generic calls
+            targetIndex = lines.findIndex(l => 
+                l.includes('children') || l.includes('child') || 
+                l.includes(`${currentTraversal}(`) || 
+                l.includes(`${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(`)
+            );
+        }
     }
 
     if (targetIndex !== -1 && lineEls[targetIndex]) {
