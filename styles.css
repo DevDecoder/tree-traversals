@@ -420,11 +420,41 @@ select {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.8rem 1.5rem;
     background: rgba(255, 255, 255, 0.05);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
+}
+
+#lang-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+}
+
+.category-badge {
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.category-badge:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+}
+
+.category-badge.active {
+    background: var(--accent-color);
+    color: var(--bg-color);
+    border-color: var(--accent-color);
+    font-weight: 600;
 }
 
 .checkbox-label {

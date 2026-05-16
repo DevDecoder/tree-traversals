@@ -11,6 +11,7 @@ let currentHooks = {};
 let manifest = null;
 
 const els = {};
+let activeCategories = new Set();
 
 export function init() {
     // Initialize elements inside init to ensure DOM is ready
@@ -62,12 +63,33 @@ async function loadManifest() {
         manifest = await response.json();
         
         // Populate lang select
-        els.langSelect.innerHTML = '';
+        refreshLangList();
+
+        // Extract all unique categories
+        const allCategories = new Set();
         manifest.languages.forEach(lang => {
-            const option = document.createElement('option');
-            option.value = lang.id;
-            option.textContent = lang.name;
-            els.langSelect.appendChild(option);
+            if (lang.categories) {
+                lang.categories.split(',').forEach(c => allCategories.add(c.trim()));
+            }
+        });
+
+        // Create badges
+        els.langCategories.innerHTML = '';
+        Array.from(allCategories).sort().forEach(cat => {
+            const badge = document.createElement('span');
+            badge.className = 'category-badge';
+            badge.textContent = cat;
+            badge.onclick = () => {
+                if (activeCategories.has(cat)) {
+                    activeCategories.delete(cat);
+                    badge.classList.remove('active');
+                } else {
+                    activeCategories.add(cat);
+                    badge.classList.add('active');
+                }
+                refreshLangList();
+            };
+            els.langCategories.appendChild(badge);
         });
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -88,6 +110,36 @@ async function loadManifest() {
         updateVisibility();
     } catch (err) {
         console.error('Failed to load manifest:', err);
+    }
+}
+
+function refreshLangList() {
+    if (!manifest) return;
+    
+    const prevValue = els.langSelect.value || currentLang;
+    els.langSelect.innerHTML = '';
+    
+    const filtered = manifest.languages.filter(lang => {
+        if (activeCategories.size === 0) return true;
+        const langCats = (lang.categories || '').split(',').map(c => c.trim());
+        return Array.from(activeCategories).every(cat => langCats.includes(cat));
+    });
+
+    filtered.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang.id;
+        option.textContent = lang.name;
+        els.langSelect.appendChild(option);
+    });
+
+    // Try to restore previous selection, or pick first filtered
+    if (filtered.some(l => l.id === prevValue)) {
+        els.langSelect.value = prevValue;
+    } else if (filtered.length > 0) {
+        els.langSelect.value = filtered[0].id;
+        if (els.langSelect.value !== currentLang) {
+            els.langSelect.onchange({ target: els.langSelect });
+        }
     }
 }
 
@@ -536,13 +588,17 @@ async function updateCode() {
     const loader = await getLoader(currentLang);
     if (!loader) return;
 
-    // Update categories
+    // We no longer display categories as text here since they are interactive badges now.
+    // We could highlight the badges corresponding to currentLang if desired.
     const langInfo = manifest.languages.find(l => l.id === currentLang);
-    if (langInfo && langInfo.categories) {
-        els.langCategories.textContent = langInfo.categories;
-    } else {
-        els.langCategories.textContent = '';
-    }
+    const badges = els.langCategories.querySelectorAll('.category-badge');
+    const currentCats = (langInfo?.categories || '').split(',').map(c => c.trim());
+    
+    badges.forEach(b => {
+        // We only want to visually hint at current language categories
+        // without messing with the active filters
+        b.style.opacity = (currentCats.includes(b.textContent)) ? '1' : '0.6';
+    });
 
     const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
     const isFocused = els.checkFocus.checked;
