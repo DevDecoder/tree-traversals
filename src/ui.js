@@ -109,6 +109,7 @@ function setupEventListeners() {
     };
 
     els.btnPlay.onclick = () => {
+        console.log("Play button clicked");
         if (!animator || animator.isFinished) {
             els.sequenceList.innerHTML = '';
             startTraversal();
@@ -356,12 +357,31 @@ function refreshStack() {
 function updateVisibility() {
     const showCode = els.checkCode.checked;
     const showStack = els.checkStack.checked;
+    
+    console.log('Visibility update:', { showCode, showStack });
 
     els.codePanel.classList.toggle('hidden', !showCode);
     els.stackPanel.classList.toggle('hidden', !showStack);
 
+    // If only one is shown, it must take full height
+    if (showCode && !showStack) {
+        els.codePanel.style.flex = '1';
+    } else if (!showCode && showStack) {
+        els.stackPanel.style.flex = '1';
+    } else if (showCode && showStack) {
+        // If both are shown, restore a 50/50 split if no flex was set, 
+        // or keep existing flex if it was adjusted by resizer
+        if (!els.codePanel.style.flex || els.codePanel.style.flex === '1') {
+            els.codePanel.style.flex = '1';
+            els.stackPanel.style.flex = '1';
+        }
+    }
+
     // Hide vertical resizer if either panel is hidden
     els.resizerV.classList.toggle('hidden', !showCode || !showStack);
+    
+    // If both are hidden, the insights panel can stay empty or we could hide it
+    // For now, let's keep it so the user can see the background
 }
 
 function updateCode() {
