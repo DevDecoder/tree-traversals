@@ -15,7 +15,6 @@ const els = {
     maxChild: document.getElementById('max-child-slider'),
     depthRange: document.getElementById('depth-range'),
     childRange: document.getElementById('child-range'),
-    btnGenerate: document.getElementById('btn-generate'),
     traversalSelect: document.getElementById('traversal-select'),
     btnPlay: document.getElementById('btn-play'),
     btnStep: document.getElementById('btn-step'),
@@ -45,37 +44,35 @@ function setupEventListeners() {
         els.childRange.textContent = `${els.minChild.value} - ${els.maxChild.value}`;
     };
 
-    const syncSliders = (sliderA, sliderB, isMin) => {
-        const valA = parseInt(sliderA.value);
-        const valB = parseInt(sliderB.value);
-        if (isMin) {
-            if (valA > valB) sliderB.value = valA;
-        } else {
-            if (valA < valB) sliderA.value = valA;
+    els.minDepth.oninput = (e) => {
+        if (parseInt(els.minDepth.value) > parseInt(els.maxDepth.value)) {
+            els.maxDepth.value = els.minDepth.value;
         }
         updateRanges();
-    };
-
-    els.minDepth.oninput = (e) => {
-        syncSliders(els.minDepth, els.maxDepth, true);
+        regenerate();
     };
     els.maxDepth.oninput = (e) => {
-        syncSliders(els.maxDepth, els.minDepth, false);
+        if (parseInt(els.maxDepth.value) < parseInt(els.minDepth.value)) {
+            els.minDepth.value = els.maxDepth.value;
+        }
+        updateRanges();
+        regenerate();
     };
     els.minChild.oninput = (e) => {
-        syncSliders(els.minChild, els.maxChild, true);
-        updateCode();
-        refreshStack();
+        if (parseInt(els.minChild.value) > parseInt(els.maxChild.value)) {
+            els.maxChild.value = els.minChild.value;
+        }
+        updateRanges();
+        regenerate();
     };
     els.maxChild.oninput = (e) => {
-        syncSliders(els.maxChild, els.minChild, false);
+        if (parseInt(els.maxChild.value) < parseInt(els.minChild.value)) {
+            els.minChild.value = els.maxChild.value;
+        }
+        updateRanges();
         updateInOrderAvailability();
-        updateCode();
-        refreshStack();
+        regenerate();
     };
-    
-    els.btnGenerate.onclick = regenerate;
-    
     els.traversalSelect.onchange = (e) => {
         currentTraversal = e.target.value;
         reset();
