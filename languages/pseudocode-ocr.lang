@@ -1,0 +1,67 @@
+[meta]
+name: OCR Pseudocode
+id: pseudocode-ocr
+categories: 🇬🇧 OCR, Pseudocode
+highlight: plaintext
+[/meta]
+
+[node]
+Node({{value}}, {{left}}, {{right}})
+[/node]
+
+[leaf]
+Node({{value}})
+[/leaf]
+
+[empty]
+Null
+[/empty]
+
+[setup]
+class Node
+    public value
+    public left
+    public right
+endclass
+
+root = {{nestedTree}}
+mode = "{{mode}}"
+[/setup]
+
+[preorder]
+procedure preorder(node)
+    [enter]if node != Null then[/enter]
+        [visit]print(node.value)[/visit]
+        [move:left]preorder(node.left)[/move:left]
+        [move:right]preorder(node.right)[/move:right]
+    endif
+endprocedure
+[/preorder]
+
+[inorder]
+procedure inorder(node)
+    [enter]if node != Null then[/enter]
+        [move:left]inorder(node.left)[/move:left]
+        [visit]print(node.value)[/visit]
+        [move:right]inorder(node.right)[/move:right]
+    endif
+endprocedure
+[/inorder]
+
+[postorder]
+procedure postorder(node)
+    [enter]if node != Null then[/enter]
+        [move:left]postorder(node.left)[/move:left]
+        [move:right]postorder(node.right)[/move:right]
+        [visit]print(node.value)[/visit]
+    endif
+endprocedure
+[/postorder]
+
+if mode == "PRE" then
+    preorder(root)
+elseif mode == "IN" then
+    inorder(root)
+elseif mode == "POST" then
+    postorder(root)
+endif

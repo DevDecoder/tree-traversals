@@ -1,0 +1,80 @@
+[meta]
+name: C#
+id: csharp
+categories: 🇬🇧 AQA, 🇬🇧 OCR
+highlight: csharp
+logo: https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg
+[/meta]
+
+[node]
+new Node({{value}}[nary], new List<Node> { [children:first]{{child}}[/children:first][children], {{child}}[/children] }[/nary][!nary], {{left}}[/!nary][ternary], {{middle}}[/ternary][!nary], {{right}}[/!nary])
+[/node]
+
+[leaf]
+new Node({{value}})
+[/leaf]
+
+[empty]
+null
+[/empty]
+
+using System;
+[nary]using System.Collections.Generic;[/nary]
+
+public class Node {
+    public int Value { get; set; }
+    [nary]public List<Node> Children { get; set; }[/nary][!nary]public Node Left { get; set; }
+    public Node Right { get; set; }[/!nary][ternary]
+    public Node Middle { get; set; }[/ternary]
+
+    public Node(int value[nary], List<Node> children = null[/nary][!nary], Node left = null[/!nary][ternary], Node middle = null[/ternary][!nary], Node right = null[/!nary]) {
+        Value = value;
+        [nary]Children = children ?? new List<Node>();[/nary][!nary]Left = left;
+        Right = right;[/!nary][ternary]
+        Middle = middle;[/ternary]
+    }
+}
+
+class Program {
+    static void Main() {
+        Node root = {{nestedTree}};
+        string mode = "{{mode}}";
+
+[preorder]
+    static void PreOrder(Node node) {
+        [enter]if (node == null) return;[/enter]
+        [visit]Console.WriteLine(node.Value);[/visit]
+        [nary]foreach (var child in node.Children) {
+            [move:next]PreOrder(child);[/move:next]
+        }[/nary][!nary][move:left]PreOrder(node.Left);[/move:left][ternary]
+        [move:middle]PreOrder(node.Middle);[/move:middle][/ternary]
+        [move:right]PreOrder(node.Right);[/move:right][/!nary]
+    }
+[/preorder]
+
+[inorder]
+    static void InOrder(Node node) {
+        [enter]if (node == null) return;[/enter]
+        [move:left]InOrder(node.Left);[/move:left]
+        [visit]Console.WriteLine(node.Value);[/visit]
+        [move:right]InOrder(node.Right);[/move:right]
+    }
+[/inorder]
+
+[postorder]
+    static void PostOrder(Node node) {
+        [enter]if (node == null) return;[/enter]
+        [nary]foreach (var child in node.Children) {
+            [move:next]PostOrder(child);[/move:next]
+        }[/nary][!nary][move:left]PostOrder(node.Left);[/move:left][ternary]
+        [move:middle]PostOrder(node.Middle);[/move:middle][/ternary]
+        [move:right]PostOrder(node.Right);[/move:right][/!nary]
+        [visit]Console.WriteLine(node.Value);[/visit]
+    }
+[/postorder]
+
+        if (mode == "PRE") PreOrder(root);
+        else if (mode == "IN") InOrder(root);
+        else if (mode == "POST") PostOrder(root);
+    }
+}

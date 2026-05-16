@@ -1,0 +1,68 @@
+[meta]
+name: JavaScript
+id: javascript
+categories: 🇬🇧 AQA, 🇬🇧 OCR, 🇬🇧 Edexcel
+highlight: javascript
+logo: https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg
+[/meta]
+
+[node]
+new Node({{value}}[nary], [[children:first]{{child}}[/children:first][children], {{child}}[/children]][/nary][!nary], {{left}}[/!nary][ternary], {{middle}}[/ternary][!nary], {{right}}[/!nary])
+[/node]
+
+[leaf]
+new Node({{value}})
+[/leaf]
+
+[empty]
+null
+[/empty]
+
+class Node {
+  constructor(value[nary], children = [][/nary][!nary], left = null[/!nary][ternary], middle = null[/ternary][!nary], right = null[/!nary]) {
+    this.value = value;
+    [nary]this.children = children;[/nary][!nary]this.left = left;
+    this.right = right;[/!nary][ternary]
+    this.middle = middle;[/ternary]
+  }
+}
+
+const root = {{nestedTree}};
+const MODE = "{{mode}}";
+
+[preorder]
+function preorder(node) {
+  [enter]if (!node) return;[/enter]
+  [visit]console.log(node.value);[/visit]
+  [nary]for (let child of node.children) {
+    [move:next]preorder(child);[/move:next]
+  }[/nary][!nary][move:left]preorder(node.left);[/move:left][ternary]
+  [move:middle]preorder(node.middle);[/move:middle][/ternary]
+  [move:right]preorder(node.right);[/move:right][/!nary]
+}
+[/preorder]
+
+[inorder]
+function inorder(node) {
+  [enter]if (!node) return;[/enter]
+  [move:left]inorder(node.left);[/move:left]
+  [visit]console.log(node.value);[/visit]
+  [move:right]inorder(node.right);[/move:right]
+}
+[/inorder]
+
+[postorder]
+function postorder(node) {
+  [enter]if (!node) return;[/enter]
+  [nary]for (let child of node.children) {
+    [move:next]postorder(child);[/move:next]
+  }[/nary][!nary][move:left]postorder(node.left);[/move:left][ternary]
+  [move:middle]postorder(node.middle);[/move:middle][/ternary]
+  [move:right]postorder(node.right);[/move:right][/!nary]
+  [visit]console.log(node.value);[/visit]
+}
+[/postorder]
+
+if (MODE === "PRE") preorder(root);
+else if (MODE === "IN") inorder(root);
+else if (MODE === "POST") postorder(root);

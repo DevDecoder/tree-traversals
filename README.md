@@ -58,12 +58,13 @@ Install the [Live Server extension](https://marketplace.visualstudio.com/items?i
 tree-traversals/
 ├── index.html          # Application shell
 ├── styles.css          # All styling
+├── languages/          # Language template specifications (.lang files)
+├── docs/               # Documentation
 └── src/
     ├── main.js         # Entry point
     ├── ui.js           # UI controller — event handling, panel visibility, animation loop
     ├── tree.js         # Tree data structure and SVG renderer
-    ├── traversal.js    # Generator-based traversal algorithms and Animator class
-    └── snippets.js     # Code snippet templates (JS / Python / C#)
+    └── traversal.js    # Generator-based traversal algorithms and Animator class
 ```
 
 ---
@@ -79,6 +80,15 @@ To enable it for a fork:
 3. Push any change to `main` — the workflow will build and deploy automatically.
 
 The live site will be available at `https://<your-username>.github.io/<repo-name>/`.
+
+## Contributing
+
+We welcome community contributions! The easiest way to get involved is by adding support for new programming languages or pseudocodes.
+
+The application uses a custom, language-agnostic template format (`.lang`) to build code snippets and logic block highlighting. 
+
+- Learn how to add a language: **[Contributing Guidelines](CONTRIBUTING.md)**
+- Learn how the templating engine works: **[Language Format Reference](docs/LANGUAGE_FORMAT.md)**
 
 ---
 
