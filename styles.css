@@ -122,12 +122,12 @@ main {
 }
 
 #code-panel {
-    flex: 1.5; /* Default ratio */
+    flex: 1;
     min-height: 150px;
 }
 
 #stack-panel {
-    flex: 1;
+    flex: 0 0 300px; /* Default height to comfortably show 5-6 items */
     min-height: 150px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }

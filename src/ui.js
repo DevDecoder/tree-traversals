@@ -45,10 +45,35 @@ function setupEventListeners() {
         els.childRange.textContent = `${els.minChild.value} - ${els.maxChild.value}`;
     };
 
-    els.minDepth.oninput = updateRanges;
-    els.maxDepth.oninput = updateRanges;
-    els.minChild.oninput = updateRanges;
-    els.maxChild.oninput = updateRanges;
+    els.minDepth.oninput = (e) => {
+        if (parseInt(e.target.value) > parseInt(els.maxDepth.value)) {
+            els.maxDepth.value = e.target.value;
+        }
+        updateRanges();
+    };
+    els.maxDepth.oninput = (e) => {
+        if (parseInt(e.target.value) < parseInt(els.minDepth.value)) {
+            els.minDepth.value = e.target.value;
+        }
+        updateRanges();
+    };
+    els.minChild.oninput = (e) => {
+        if (parseInt(e.target.value) > parseInt(els.maxChild.value)) {
+            els.maxChild.value = e.target.value;
+        }
+        updateRanges();
+        updateCode();
+        refreshStack();
+    };
+    els.maxChild.oninput = (e) => {
+        if (parseInt(e.target.value) < parseInt(els.minChild.value)) {
+            els.minChild.value = e.target.value;
+        }
+        updateRanges();
+        updateInOrderAvailability();
+        updateCode();
+        refreshStack();
+    };
     
     els.btnGenerate.onclick = regenerate;
     
