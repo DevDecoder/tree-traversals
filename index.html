@@ -73,10 +73,7 @@
 
             <section class="control-group">
                 <h3>Visibility</h3>
-                <div class="toggle-row">
-                    <label for="check-trace">Trace Line</label>
-                    <input type="checkbox" id="check-trace" checked>
-                </div>
+
                 <div class="toggle-row">
                     <label for="check-stack">Call Stack</label>
                     <input type="checkbox" id="check-stack" checked>
@@ -116,6 +113,9 @@
                     <span id="lang-categories"></span>
                     <div class="footer-controls">
                         <img id="lang-logo" class="lang-logo hidden" alt="Language Logo">
+                        <label class="checkbox-label" title="Highlight the executing line of code during traversal">
+                            <input type="checkbox" id="check-trace" checked> Trace Line
+                        </label>
                         <label class="checkbox-label" title="Only show code for the selected traversal mode">
                             <input type="checkbox" id="check-focus" checked> Focus Mode
                         </label>
