@@ -111,11 +111,39 @@ function setupEventListeners() {
     maxChildSlider.oninput = (e) => {
         document.getElementById('child-range').textContent = `${minChildSlider.value} - ${e.target.value}`;
         updateInOrderAvailability();
+        updateCode();
+        refreshStack();
     };
 
     minChildSlider.oninput = (e) => {
         document.getElementById('child-range').textContent = `${e.target.value} - ${maxChildSlider.value}`;
+        updateCode();
+        refreshStack();
     };
+
+    // Resizer Logic
+    const resizer = document.getElementById('resizer');
+    const insights = document.getElementById('insights');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const width = window.innerWidth - e.clientX;
+        if (width > 250 && width < window.innerWidth * 0.6) {
+            insights.style.width = `${width}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isResizing = false;
+        document.body.style.cursor = 'default';
+    });
 
     // Visibility Toggles
     document.getElementById('check-stack').onchange = (e) => {

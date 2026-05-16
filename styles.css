@@ -70,24 +70,49 @@ main {
     display: flex;
     flex: 1;
     overflow: hidden;
-    gap: 1rem;
-    padding: 1rem;
+    background: rgba(0, 0, 0, 0.1);
 }
 
-#controls, #insights {
-    width: 300px;
+#controls {
+    width: 320px;
+    min-width: 300px;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 #visualization {
     flex: 1;
     position: relative;
     overflow: hidden;
-    border-radius: 12px;
     background: rgba(0, 0, 0, 0.2);
+}
+
+#resizer {
+    width: 4px;
+    cursor: col-resize;
+    background: rgba(255, 255, 255, 0.05);
+    transition: background 0.2s, width 0.2s;
+    z-index: 10;
+}
+
+#resizer:hover, #resizer:active {
+    background: var(--accent-color);
+    width: 6px;
+}
+
+#insights {
+    width: 380px;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 #tree-canvas {
