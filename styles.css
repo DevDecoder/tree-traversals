@@ -322,12 +322,16 @@ input[type="range"] {
     padding: 0.5rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
-    color: white;
+    color: var(--text-primary);
     border-radius: 0;
     cursor: pointer;
     text-decoration: none;
     font-size: 0.9rem;
     transition: background 0.15s, color 0.15s;
+}
+
+[data-theme="light"] .btn-secondary {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary:active,
@@ -366,7 +370,7 @@ input[type="range"] {
 select {
     width: 100%;
     background: var(--node-bg);
-    color: white;
+    color: var(--text-primary);
     border: 1px solid var(--glass-border);
     padding: 0.5rem;
     border-radius: 0;
@@ -399,10 +403,6 @@ select {
 .header-actions select {
     margin-bottom: 0;
     min-width: 120px;
-}
-
-#code-display {
-    /* Styles moved to line 200 block to consolidate and fix scrollbar logic */
 }
 
 .code-line {
@@ -630,7 +630,7 @@ select {
 .btn-icon {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 1.2rem;
     padding: 4px 8px;
@@ -642,8 +642,12 @@ select {
 }
 
 .btn-icon:hover {
-    color: white;
+    color: var(--text-primary);
     background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .btn-icon:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .hidden {
