@@ -10,13 +10,6 @@
     --edge-color: #334155;
     --font-main: 'Outfit', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    
-    /* Syntax Highlighting */
-    --hl-keyword: #f472b6;
-    --hl-string: #10b981;
-    --hl-comment: #64748b;
-    --hl-number: #fbbf24;
-    --hl-function: #38bdf8;
 }
 
 * {
@@ -369,12 +362,6 @@ select {
     color: var(--accent-color);
     box-shadow: inset 3px 0 0 var(--accent-color);
 }
-
-.hl-keyword { color: var(--hl-keyword); font-weight: 600; }
-.hl-string { color: var(--hl-string); }
-.hl-comment { color: var(--hl-comment); font-style: italic; }
-.hl-number { color: var(--hl-number); }
-.hl-function { color: var(--hl-function); }
 
 
 #stack-display {

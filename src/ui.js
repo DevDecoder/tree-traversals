@@ -1,7 +1,6 @@
 import { Tree } from './tree.js';
 import { Animator, preorder, inorder, postorder } from './traversal.js';
 import { LangLoader } from './lang-loader.js';
-import { Highlighter } from './highlighter.js';
 
 let tree = new Tree();
 let animator = null;
@@ -500,9 +499,17 @@ async function updateCode() {
     
     currentHooks = result.hooks;
     
-    const highlighted = Highlighter.highlight(result.code, loader.meta.highlight || currentLang);
+    // Use Highlight.js if available
+    els.codeDisplay.textContent = result.code;
+    els.codeDisplay.className = `hljs language-${loader.meta.highlight || currentLang}`;
+    
+    if (window.hljs) {
+        window.hljs.highlightElement(els.codeDisplay);
+    }
 
-    els.codeDisplay.innerHTML = highlighted.split('\n')
+    // Wrap lines for highlighting
+    const lines = els.codeDisplay.innerHTML.split('\n');
+    els.codeDisplay.innerHTML = lines
         .map(line => `<span class="code-line">${line}</span>`)
         .join('\n');
 }

@@ -154,13 +154,8 @@ export class LangLoader {
             cleanLines.push(cleanLine);
         });
 
-        // Final pass to collapse excessive blank lines (max 2 consecutive)
-        let finalCode = cleanLines.join('\n')
-            .replace(/\n{3,}/g, '\n\n')
-            .trim();
-
         return {
-            code: finalCode,
+            code: cleanLines.join('\n').trim(),
             hooks: hooks
         };
     }
@@ -175,7 +170,7 @@ export class LangLoader {
             
             // If the arity matches, strip the positive tags but KEEP the content
             // If the arity DOES NOT match, remove the positive tags AND their content
-            const positiveRegex = new RegExp(`\\[${a}\\]([\\s\\S]*?)\\[\\/${a}\\]\\n?`, 'g');
+            const positiveRegex = new RegExp(`\\[${a}\\]([\\s\\S]*?)\\[\\/${a}\\]`, 'g');
             if (isMatch) {
                 result = result.replace(positiveRegex, '$1');
             } else {
@@ -185,7 +180,7 @@ export class LangLoader {
             // For negative tags [!arity]
             // If the arity matches, remove the negative tags AND their content
             // If the arity DOES NOT match, strip the negative tags but KEEP the content
-            const negativeRegex = new RegExp(`\\[!${a}\\]([\\s\\S]*?)\\[\\/!${a}\\]\\n?`, 'g');
+            const negativeRegex = new RegExp(`\\[!${a}\\]([\\s\\S]*?)\\[\\/!${a}\\]`, 'g');
             if (isMatch) {
                 result = result.replace(negativeRegex, '');
             } else {
