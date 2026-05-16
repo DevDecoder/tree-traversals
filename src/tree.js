@@ -28,11 +28,22 @@ export class Tree {
             node.depth = depth;
             this.nodes.push(node);
 
-            const minC = depth < minDepth ? Math.max(1, minChildren) : 0;
-            const numChildren = Math.floor(Math.random() * (maxChildren - minC + 1)) + minC;
+            // Determine if this node should have children
+            let shouldHaveChildren = true;
+            if (depth >= maxDepth) {
+                shouldHaveChildren = false;
+            } else if (depth >= minDepth) {
+                // After reaching minDepth, we have a chance to stop
+                // But if minChildren is high, we're less likely to stop?
+                // For now, let's just use a fixed probability to keep it simple
+                shouldHaveChildren = Math.random() > 0.4;
+            }
 
-            if (numChildren >= 1) node.left = createNode(depth + 1);
-            if (numChildren >= 2) node.right = createNode(depth + 1);
+            if (shouldHaveChildren) {
+                const numChildren = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
+                if (numChildren >= 1) node.left = createNode(depth + 1);
+                if (numChildren >= 2) node.right = createNode(depth + 1);
+            }
 
             return node;
         };
