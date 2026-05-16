@@ -1,13 +1,17 @@
 import { Tree } from './tree.js';
 import { Animator, preorder, inorder, postorder } from './traversal.js';
-import { getSnippets } from './snippets.js';
+import { LangLoader } from './lang-loader.js';
 
 let tree = new Tree();
 let animator = null;
 let currentTraversal = 'preorder';
-let currentLang = 'js';
+let currentLang = 'javascript';
+let loaders = {};
+let currentHooks = {};
+let manifest = null;
 
 const els = {};
+let activeCategories = new Set();
 
 export function init() {
     // Initialize elements inside init to ensure DOM is ready
@@ -27,20 +31,160 @@ export function init() {
     els.codeDisplay = document.querySelector('#code-display code');
     els.stackDisplay = document.getElementById('stack-display');
     els.sequenceList = document.getElementById('sequence-list');
+    els.checkSettings = document.getElementById('check-settings');
+    els.checkSequence = document.getElementById('check-sequence');
     els.checkCode = document.getElementById('check-code');
     els.checkStack = document.getElementById('check-stack');
+    els.checkTrace = document.getElementById('check-trace');
     els.btnCopy = document.getElementById('btn-copy');
+    els.btnHideSettings = document.getElementById('btn-hide-settings');
+    els.btnHideSequence = document.getElementById('btn-hide-sequence');
     els.btnHideCode = document.getElementById('btn-hide-code');
     els.btnHideStack = document.getElementById('btn-hide-stack');
     els.resizerH = document.getElementById('resizer');
     els.resizerV = document.getElementById('v-resizer');
+    els.controls = document.getElementById('controls');
+    els.resultsBar = document.getElementById('results-bar');
     els.codePanel = document.getElementById('code-panel');
     els.stackPanel = document.getElementById('stack-panel');
     els.insights = document.getElementById('insights');
     els.btnRegenerate = document.getElementById('btn-regenerate');
+    els.checkFocus = document.getElementById('check-focus');
+    els.langCategories = document.getElementById('lang-categories');
+    els.btnTheme = document.getElementById('btn-theme');
+    els.langLogo = document.getElementById('lang-logo');
+
+    // Load theme from localStorage
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    els.btnTheme.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
 
     setupEventListeners();
-    regenerate();
+    loadManifest().then(() => {
+        regenerate();
+    });
+}
+
+async function loadManifest() {
+    try {
+        const response = await fetch('manifest.json');
+        manifest = await response.json();
+        
+        // Populate lang select
+        refreshLangList();
+
+        // Extract all unique categories
+        const allCategories = new Set();
+        manifest.languages.forEach(lang => {
+            if (lang.categories) {
+                lang.categories.split(',').forEach(c => allCategories.add(c.trim()));
+            }
+        });
+
+        // Create badges
+        els.langCategories.innerHTML = '';
+        Array.from(allCategories).sort().forEach(cat => {
+            const badge = document.createElement('span');
+            badge.className = 'category-badge';
+            badge.textContent = cat;
+            badge.onclick = () => {
+                if (activeCategories.has(cat)) {
+                    activeCategories.delete(cat);
+                    badge.classList.remove('active');
+                } else {
+                    activeCategories.add(cat);
+                    badge.classList.add('active');
+                }
+                refreshLangList();
+            };
+            els.langCategories.appendChild(badge);
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.has('categories')) {
+            const cats = urlParams.get('categories').split(',').map(c => c.trim());
+            cats.forEach(cat => {
+                if (allCategories.has(cat)) {
+                    activeCategories.add(cat);
+                    const badges = Array.from(els.langCategories.querySelectorAll('.category-badge'));
+                    const badge = badges.find(b => b.textContent === cat);
+                    if (badge) badge.classList.add('active');
+                }
+            });
+            refreshLangList();
+        }
+
+        let targetLang = urlParams.get('lang') || 'javascript';
+        
+        // Show code panel by default if lang is passed, unless explicitly overridden
+        if (urlParams.has('lang') && !urlParams.has('code')) {
+            els.checkCode.checked = true;
+        } else if (urlParams.has('code')) {
+            els.checkCode.checked = urlParams.get('code') === 'true';
+        }
+        
+        if (urlParams.has('traceLine')) els.checkTrace.checked = urlParams.get('traceLine') === 'true';
+        if (urlParams.has('callStack')) els.checkStack.checked = urlParams.get('callStack') === 'true';
+        if (urlParams.has('focus')) els.checkFocus.checked = urlParams.get('focus') === 'true';
+        if (urlParams.has('settings')) els.checkSettings.checked = urlParams.get('settings') === 'true';
+        if (urlParams.has('sequence')) els.checkSequence.checked = urlParams.get('sequence') === 'true';
+        
+        // Validate against loaded languages
+        const langExists = manifest.languages.some(l => l.id === targetLang);
+        currentLang = langExists ? targetLang : manifest.languages[0].id;
+        els.langSelect.value = currentLang;
+        updateVisibility();
+    } catch (err) {
+        console.error('Failed to load manifest:', err);
+    }
+}
+
+function refreshLangList() {
+    if (!manifest) return;
+    
+    const prevValue = els.langSelect.value || currentLang;
+    els.langSelect.innerHTML = '';
+    
+    const filtered = manifest.languages.filter(lang => {
+        if (activeCategories.size === 0) return true;
+        const langCats = (lang.categories || '').split(',').map(c => c.trim());
+        return Array.from(activeCategories).every(cat => langCats.includes(cat));
+    });
+
+    filtered.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang.id;
+        option.textContent = lang.name;
+        els.langSelect.appendChild(option);
+    });
+
+    // Try to restore previous selection, or pick first filtered
+    if (filtered.some(l => l.id === prevValue)) {
+        els.langSelect.value = prevValue;
+    } else if (filtered.length > 0) {
+        els.langSelect.value = filtered[0].id;
+        if (els.langSelect.value !== currentLang) {
+            els.langSelect.onchange({ target: els.langSelect });
+        }
+    }
+}
+
+async function getLoader(langId) {
+    if (loaders[langId]) return loaders[langId];
+    
+    const langInfo = manifest.languages.find(l => l.id === langId);
+    if (!langInfo) return null;
+
+    try {
+        const response = await fetch(`languages/${langInfo.file}`);
+        const content = await response.text();
+        loaders[langId] = new LangLoader(content);
+        return loaders[langId];
+    } catch (err) {
+        console.error(`Failed to load language ${langId}:`, err);
+        return null;
+    }
 }
 
 // Syncs the Play button's label AND colour class with the current state.
@@ -86,33 +230,65 @@ function setupEventListeners() {
         regenerate();
     };
     
-    els.traversalSelect.onchange = (e) => {
+    els.traversalSelect.onchange = async (e) => {
         currentTraversal = e.target.value;
         reset();
-        updateCode();
+        await updateCode();
     };
 
-    els.langSelect.onchange = (e) => {
+    els.langSelect.onchange = async (e) => {
         currentLang = e.target.value;
-        updateCode();
+        await updateCode();
         refreshStack();
     };
 
+    els.checkFocus.onchange = async () => {
+        await updateCode();
+    };
+
+    els.checkSettings.onchange = () => updateVisibility();
+    els.checkSequence.onchange = () => updateVisibility();
     els.checkCode.onchange = () => updateVisibility();
     els.checkStack.onchange = () => updateVisibility();
+    els.checkTrace.onchange = () => {
+        if (!els.checkTrace.checked) {
+            const lineEls = els.codeDisplay.querySelectorAll('.code-line');
+            lineEls.forEach(l => l.classList.remove('highlight'));
+        }
+    };
+    els.btnHideSettings.onclick = () => { els.checkSettings.checked = false; updateVisibility(); };
+    els.btnHideSequence.onclick = () => { els.checkSequence.checked = false; updateVisibility(); };
     els.btnHideCode.onclick = () => { els.checkCode.checked = false; updateVisibility(); };
     els.btnHideStack.onclick = () => { els.checkStack.checked = false; updateVisibility(); };
+    
+    const btnShowMenu = document.getElementById('btn-show-menu');
+    if (btnShowMenu) {
+        btnShowMenu.onclick = (e) => {
+            const menu = document.getElementById('show-menu');
+            menu.classList.toggle('show');
+            e.stopPropagation();
+        };
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('show-menu');
+            if (menu && !menu.contains(e.target)) menu.classList.remove('show');
+        });
+    }
 
     // Initial visibility
     updateVisibility();
 
-    els.btnCopy.onclick = () => {
-        const code = getSnippets(currentLang, currentTraversal, tree, parseInt(els.maxChild.value), false);
-        navigator.clipboard.writeText(code).then(() => {
-            const originalText = els.btnCopy.textContent;
-            els.btnCopy.textContent = 'Copied!';
-            setTimeout(() => { els.btnCopy.textContent = originalText; }, 2000);
-        });
+    els.btnCopy.onclick = async () => {
+        const loader = await getLoader(currentLang);
+        if (loader) {
+            const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
+            // Always copy full code, ignore focus mode
+            const result = loader.generateCode(tree.root, getArity(), mode, false);
+            navigator.clipboard.writeText(result.code).then(() => {
+                const originalText = els.btnCopy.textContent;
+                els.btnCopy.textContent = 'Copied!';
+                setTimeout(() => { els.btnCopy.textContent = originalText; }, 2000);
+            });
+        }
     };
 
     els.btnPlay.onclick = () => {
@@ -244,6 +420,22 @@ function setupEventListeners() {
         document.body.style.cursor = 'default';
     });
 
+    els.btnTheme.onclick = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        els.btnTheme.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        
+        // Update syntax highlighting theme
+        const hljsTheme = document.querySelector('link[href*="highlight.js"]');
+        if (hljsTheme) {
+            hljsTheme.href = newTheme === 'dark' 
+                ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
+                : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css';
+        }
+    };
+
     updateInOrderAvailability();
 }
 
@@ -263,7 +455,7 @@ function updateInOrderAvailability() {
     }
 }
 
-function regenerate() {
+async function regenerate() {
     reset();
     const minD = parseInt(els.minDepth.value);
     const maxD = parseInt(els.maxDepth.value);
@@ -278,7 +470,14 @@ function regenerate() {
         Math.min(minC, maxC), Math.max(minC, maxC)
     );
     tree.render(els.canvas);
-    updateCode();
+    await updateCode();
+}
+
+function getArity() {
+    const maxC = parseInt(els.maxChild.value);
+    if (maxC === 2) return 'binary';
+    if (maxC === 3) return 'ternary';
+    return 'nary';
 }
 
 function reset() {
@@ -349,26 +548,21 @@ async function handleStep(step) {
     const lineEls = els.codeDisplay.querySelectorAll('.code-line');
     lineEls.forEach(l => l.classList.remove('highlight'));
 
-    const lines = Array.from(lineEls).map(el => el.textContent);
-    
-    const funcNameNeedle = currentLang === 'csharp' 
-        ? `${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(` 
-        : `${currentTraversal}(`;
-    const funcStart = lines.findIndex(l => l.includes(funcNameNeedle) && (l.includes('function') || l.includes('def') || l.includes('static void')));
-    
     let targetIndex = -1;
-    if (type === 'visit') {
-        targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine')));
+    if (type === 'enter') {
+        targetIndex = currentHooks.enter - 1;
+    } else if (type === 'visit') {
+        targetIndex = currentHooks.visit - 1;
     } else if (side) {
-        const needle = side === 'left' ? '.left' : (side === 'right' ? '.right' : '.middle');
-        const capNeedle = needle.charAt(0) + needle.charAt(1).toUpperCase() + needle.slice(2);
-        targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes(needle) || l.includes(capNeedle)));
-        if (targetIndex === -1) {
-            targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('children') || l.includes('child') || l.includes(funcNameNeedle)));
+        const hookKey = `move:${side}`;
+        if (currentHooks[hookKey]) {
+            targetIndex = currentHooks[hookKey] - 1;
+        } else if (currentHooks['move:next']) {
+            targetIndex = currentHooks['move:next'] - 1;
         }
     }
 
-    if (targetIndex !== -1 && lineEls[targetIndex]) {
+    if (els.checkTrace.checked && targetIndex !== -1 && lineEls[targetIndex]) {
         lineEls[targetIndex].classList.add('highlight');
         lineEls[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -412,9 +606,13 @@ function refreshStack() {
 }
 
 function updateVisibility() {
+    const showSettings = els.checkSettings.checked;
+    const showSequence = els.checkSequence.checked;
     const showCode = els.checkCode.checked;
     const showStack = els.checkStack.checked;
     
+    els.controls.classList.toggle('hidden', !showSettings);
+    els.resultsBar.classList.toggle('hidden', !showSequence);
     els.codePanel.classList.toggle('hidden', !showCode);
     els.stackPanel.classList.toggle('hidden', !showStack);
     
@@ -439,12 +637,48 @@ function updateVisibility() {
     els.resizerH.classList.toggle('hidden', !showInsights);
 }
 
-function updateCode() {
-    const maxChildren = parseInt(els.maxChild.value);
-    // Focus mode is gone, but we still need snippets
-    const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, false);
+async function updateCode() {
+    if (!manifest) return;
+    const loader = await getLoader(currentLang);
+    if (!loader) return;
+
+    // We no longer display categories as text here since they are interactive badges now.
+    // We could highlight the badges corresponding to currentLang if desired.
+    const langInfo = manifest.languages.find(l => l.id === currentLang);
+    const badges = els.langCategories.querySelectorAll('.category-badge');
+    const currentCats = (langInfo?.categories || '').split(',').map(c => c.trim());
     
-    els.codeDisplay.innerHTML = code.split('\n')
-        .map(line => `<span class="code-line">${line}</span>`)
-        .join('\n');
+    badges.forEach(b => {
+        // We only want to visually hint at current language categories
+        // without messing with the active filters
+        b.style.opacity = (currentCats.includes(b.textContent)) ? '1' : '0.6';
+    });
+
+    if (loader.meta.logo) {
+        els.langLogo.src = loader.meta.logo;
+        els.langLogo.classList.remove('hidden');
+    } else {
+        els.langLogo.classList.add('hidden');
+    }
+
+    const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
+    const isFocused = els.checkFocus.checked;
+    const result = loader.generateCode(tree.root, getArity(), mode, isFocused);
+    
+    currentHooks = result.hooks;
+    
+    // Use Highlight.js if available
+    els.codeDisplay.textContent = result.code;
+    els.codeDisplay.className = `hljs language-${loader.meta.highlight || currentLang}`;
+    
+    if (window.hljs) {
+        delete els.codeDisplay.dataset.highlighted;
+        window.hljs.highlightElement(els.codeDisplay);
+    }
+
+    // Wrap lines for highlighting
+    const lines = els.codeDisplay.innerHTML.trimEnd().split('\n');
+    els.codeDisplay.innerHTML = lines
+        .map(line => `<span class="code-line">${line || ' '}</span>`)
+        .join('');
 }

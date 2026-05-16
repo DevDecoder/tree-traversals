@@ -2,7 +2,7 @@
 
 An interactive, visual explorer for binary and n-ary tree traversal algorithms, designed for A-Level Computer Science students and anyone learning tree traversals for the first time.
 
-🚀 **[Live demo →](https://devdecoder.github.io/tree-traversals/)**
+🚀 **[Live demo →](https://pages.devdecoder.com/tree-traversals/)**
 
 ---
 
@@ -17,6 +17,21 @@ An interactive, visual explorer for binary and n-ary tree traversal algorithms, 
 - **Sequence bar** — the visited node sequence builds up as the traversal progresses
 - **Dark / light theme toggle**
 - **Resizable panels** — drag the dividers to customise the layout; hide the Code or Call Stack panels independently
+
+---
+
+## URL Parameters
+
+You can customise the initial state of the application using URL parameters. This is useful for creating shareable links with specific configurations.
+
+- `lang` — Set the initial language (e.g., `?lang=python`).
+- `categories` — Filter the language dropdown to show only languages matching the specified categories (comma-separated, e.g., `?categories=AQA,OCR`).
+- `settings` — Toggle the visibility of the settings (left) panel (`true` or `false`).
+- `code` — Toggle the visibility of the code panel (`true` or `false`).
+- `callStack` — Toggle the visibility of the call stack panel (`true` or `false`).
+- `sequence` — Toggle the visibility of the sequence bar (`true` or `false`).
+- `traceLine` — Toggle the code line tracing (`true` or `false`).
+- `focus` — Toggle focus mode, hiding boilerplate code (`true` or `false`).
 
 ---
 
@@ -58,12 +73,13 @@ Install the [Live Server extension](https://marketplace.visualstudio.com/items?i
 tree-traversals/
 ├── index.html          # Application shell
 ├── styles.css          # All styling
+├── languages/          # Language template specifications (.lang files)
+├── docs/               # Documentation
 └── src/
     ├── main.js         # Entry point
     ├── ui.js           # UI controller — event handling, panel visibility, animation loop
     ├── tree.js         # Tree data structure and SVG renderer
-    ├── traversal.js    # Generator-based traversal algorithms and Animator class
-    └── snippets.js     # Code snippet templates (JS / Python / C#)
+    └── traversal.js    # Generator-based traversal algorithms and Animator class
 ```
 
 ---
@@ -79,6 +95,15 @@ To enable it for a fork:
 3. Push any change to `main` — the workflow will build and deploy automatically.
 
 The live site will be available at `https://<your-username>.github.io/<repo-name>/`.
+
+## Contributing
+
+We welcome community contributions! The easiest way to get involved is by adding support for new programming languages or pseudocodes.
+
+The application uses a custom, language-agnostic template format (`.lang`) to build code snippets and logic block highlighting. 
+
+- Learn how to add a language: **[Contributing Guidelines](CONTRIBUTING.md)**
+- Learn how the templating engine works: **[Language Format Reference](docs/LANGUAGE_FORMAT.md)**
 
 ---
 

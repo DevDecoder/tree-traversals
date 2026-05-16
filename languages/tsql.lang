@@ -1,0 +1,86 @@
+[meta]
+name: T-SQL (SQL Server)
+id: tsql
+categories: Relational
+highlight: sql
+logo: https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg
+[/meta]
+
+[empty]
+[/empty]
+
+[node]
+INSERT INTO tree (id, val, [nary]parent_id[/nary][!nary]left_id, [ternary]middle_id, [/ternary]right_id[/!nary]) VALUES ({{value}}, {{value}}, [nary]{{parentValue}}[/nary][!nary]{{leftValue}}, [ternary]{{middleValue}}, [/ternary]{{rightValue}}[/!nary]);
+[nary][children]
+{{child}}[/children][/nary][!nary]{{left}}
+[ternary]{{middle}}
+[/ternary]{{right}}[/!nary]
+[/node]
+
+[leaf]
+INSERT INTO tree (id, val, [nary]parent_id[/nary][!nary]left_id, [ternary]middle_id, [/ternary]right_id[/!nary]) VALUES ({{value}}, {{value}}, [nary]{{parentValue}}[/nary][!nary]{{leftValue}}, [ternary]{{middleValue}}, [/ternary]{{rightValue}}[/!nary]);
+[/leaf]
+
+CREATE TABLE tree (
+    id INT PRIMARY KEY,
+    val INT,[nary]
+    parent_id INT[/nary][!nary]
+    left_id INT,[ternary]
+    middle_id INT,[/ternary]
+    right_id INT[/!nary]
+);
+
+{{nestedTree}}
+GO
+
+[preorder]
+CREATE OR ALTER PROCEDURE Preorder(@rootId INT) AS
+BEGIN
+    WITH preorder_traversal AS (
+        [enter]SELECT id, val, [nary]parent_id[/nary][!nary]left_id, [ternary]middle_id, [/ternary]right_id[/!nary], 1 AS ord[/enter]
+        FROM tree WHERE id = @rootId
+
+        UNION ALL
+
+        SELECT t.id, t.val, [nary]t.parent_id[/nary][!nary]t.left_id, [ternary]t.middle_id, [/ternary]t.right_id[/!nary],
+               pt.ord + 1
+        FROM tree t
+        JOIN preorder_traversal pt ON [nary]
+            [move:next]t.parent_id = pt.id[/move:next][/nary][!nary]
+            [move:left]t.id = pt.left_id[/move:left] OR [ternary]
+            [move:middle]t.id = pt.middle_id[/move:middle] OR [/ternary]
+            [move:right]t.id = pt.right_id[/move:right][/!nary]
+    )
+    [visit]SELECT val FROM preorder_traversal ORDER BY ord;[/visit]
+END;
+GO
+[/preorder]
+
+[inorder]
+-- In-order is complex in standard set-based SQL without complex ordering paths.
+-- (Simplified illustrative query)
+[/inorder]
+
+[postorder]
+CREATE OR ALTER PROCEDURE Postorder(@rootId INT) AS
+BEGIN
+    WITH postorder_traversal AS (
+        [enter]SELECT id, val, [nary]parent_id[/nary][!nary]left_id, [ternary]middle_id, [/ternary]right_id[/!nary], 1 AS depth[/enter]
+        FROM tree WHERE id = @rootId
+        UNION ALL
+        SELECT t.id, t.val, [nary]t.parent_id[/nary][!nary]t.left_id, [ternary]t.middle_id, [/ternary]t.right_id[/!nary], pt.depth + 1
+        FROM tree t
+        JOIN postorder_traversal pt ON [nary]
+            [move:next]t.parent_id = pt.id[/move:next][/nary][!nary]
+            [move:left]t.id = pt.left_id[/move:left] OR [ternary]
+            [move:middle]t.id = pt.middle_id[/move:middle] OR [/ternary]
+            [move:right]t.id = pt.right_id[/move:right][/!nary]
+    )
+    [visit]SELECT val FROM postorder_traversal ORDER BY depth DESC;[/visit]
+END;
+GO
+[/postorder]
+
+DECLARE @mode VARCHAR(10) = '{{mode}}';
+IF @mode = 'PRE' EXEC Preorder {{rootValue}};
+ELSE IF @mode = 'POST' EXEC Postorder {{rootValue}};

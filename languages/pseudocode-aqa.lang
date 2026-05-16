@@ -1,0 +1,65 @@
+[meta]
+name: AQA Pseudocode
+id: pseudocode-aqa
+categories: 🇬🇧 AQA, Pseudocode
+highlight: plaintext
+[/meta]
+
+[node]
+Node({{value}}, {{left}}, {{right}})
+[/node]
+
+[leaf]
+Node({{value}})
+[/leaf]
+
+[empty]
+NULL
+[/empty]
+
+RECORD Node
+    value : Integer
+    left : Pointer
+    right : Pointer
+ENDRECORD
+
+root ← {{nestedTree}}
+mode ← "{{mode}}"
+
+[preorder]
+SUBROUTINE Preorder(node)
+    [enter]IF node ≠ NULL THEN[/enter]
+        [visit]OUTPUT node.value[/visit]
+        [move:left]Preorder(node.left)[/move:left]
+        [move:right]Preorder(node.right)[/move:right]
+    ENDIF
+ENDSUBROUTINE
+[/preorder]
+
+[inorder]
+SUBROUTINE Inorder(node)
+    [enter]IF node ≠ NULL THEN[/enter]
+        [move:left]Inorder(node.left)[/move:left]
+        [visit]OUTPUT node.value[/visit]
+        [move:right]Inorder(node.right)[/move:right]
+    ENDIF
+ENDSUBROUTINE
+[/inorder]
+
+[postorder]
+SUBROUTINE Postorder(node)
+    [enter]IF node ≠ NULL THEN[/enter]
+        [move:left]Postorder(node.left)[/move:left]
+        [move:right]Postorder(node.right)[/move:right]
+        [visit]OUTPUT node.value[/visit]
+    ENDIF
+ENDSUBROUTINE
+[/postorder]
+
+IF mode = "PRE" THEN
+    Preorder(root)
+[binary]ELSE IF mode = "IN" THEN
+    Inorder(root)[/binary]
+ELSE IF mode = "POST" THEN
+    Postorder(root)
+ENDIF

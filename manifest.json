@@ -1,0 +1,46 @@
+{
+    "languages": [
+        {
+            "id": "csharp",
+            "name": "C#",
+            "categories": "🇬🇧 AQA, 🇬🇧 OCR",
+            "file": "csharp.lang"
+        },
+        {
+            "id": "java",
+            "name": "Java",
+            "categories": "🇬🇧 OCR",
+            "file": "java.lang"
+        },
+        {
+            "id": "javascript",
+            "name": "JavaScript",
+            "categories": "🇬🇧 AQA, 🇬🇧 OCR, 🇬🇧 Edexcel",
+            "file": "javascript.lang"
+        },
+        {
+            "id": "pseudocode-aqa",
+            "name": "AQA Pseudocode",
+            "categories": "🇬🇧 AQA, Pseudocode",
+            "file": "pseudocode-aqa.lang"
+        },
+        {
+            "id": "pseudocode-ocr",
+            "name": "OCR Pseudocode",
+            "categories": "🇬🇧 OCR, Pseudocode",
+            "file": "pseudocode-ocr.lang"
+        },
+        {
+            "id": "python",
+            "name": "Python",
+            "categories": "🇬🇧 AQA, 🇬🇧 OCR, 🇬🇧 Edexcel, 🇬🇧 Cambridge, 🇬🇧 WJEC, 🇬🇧 CCEA",
+            "file": "python.lang"
+        },
+        {
+            "id": "tsql",
+            "name": "T-SQL (SQL Server)",
+            "categories": "Relational",
+            "file": "tsql.lang"
+        }
+    ]
+}
