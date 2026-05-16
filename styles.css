@@ -10,6 +10,49 @@
     --edge-color: #334155;
     --font-main: 'Outfit', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --scrollbar-bg: rgba(255, 255, 255, 0.05);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] {
+    --bg-color: #f8fafc;
+    --accent-color: #0ea5e9;
+    --secondary-accent: #db2777;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --node-bg: #e2e8f0;
+    --edge-color: #94a3b8;
+    --scrollbar-bg: rgba(0, 0, 0, 0.05);
+    --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] *::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -52,18 +95,18 @@ header {
     gap: 12px;
 }
 
-.pulse {
-    width: 12px;
-    height: 12px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent-color);
-    animation: pulse-ring 2s infinite;
-}
-
 @keyframes pulse-ring {
     0% { transform: scale(1); opacity: 1; }
     100% { transform: scale(2.5); opacity: 0; }
+}
+
+.logo-img {
+    height: 32px;
+    width: auto;
+}
+
+[data-theme="light"] .logo-img {
+    filter: invert(1);
 }
 
 main {
@@ -156,8 +199,14 @@ main {
 
 #code-display {
     flex: 1;
-    overflow-y: auto;
+    overflow: auto; /* Changed from overflow-y to auto */
     margin: 0;
+    position: relative;
+}
+
+#code-display code {
+    display: block;
+    min-width: fit-content;
 }
 
 #stack-display {
@@ -429,9 +478,9 @@ select {
 }
 
 #results-bar {
-    height: 80px;
+    height: 60px; /* Slightly shorter */
     margin: 0;
-    padding: 0;
+    padding: 0 2rem; /* Added horizontal padding to match header */
     border-left: none;
     border-right: none;
     border-bottom: none;

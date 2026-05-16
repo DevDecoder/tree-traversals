@@ -43,6 +43,12 @@ export function init() {
     els.btnRegenerate = document.getElementById('btn-regenerate');
     els.checkFocus = document.getElementById('check-focus');
     els.langCategories = document.getElementById('lang-categories');
+    els.btnTheme = document.getElementById('btn-theme');
+
+    // Load theme from localStorage
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    els.btnTheme.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
 
     setupEventListeners();
     loadManifest().then(() => {
@@ -311,6 +317,22 @@ function setupEventListeners() {
         isResizingV = false;
         document.body.style.cursor = 'default';
     });
+
+    els.btnTheme.onclick = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        els.btnTheme.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        
+        // Update syntax highlighting theme
+        const hljsTheme = document.querySelector('link[href*="highlight.js"]');
+        if (hljsTheme) {
+            hljsTheme.href = newTheme === 'dark' 
+                ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
+                : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css';
+        }
+    };
 
     updateInOrderAvailability();
 }
