@@ -138,17 +138,15 @@ export class LangLoader {
         const hooks = {};
         const hookTags = ['enter', 'visit', 'move:left', 'move:middle', 'move:right', 'move:next'];
         
-        const lines = template.split('\n');
+        const rawLines = template.split('\n');
         const cleanLines = [];
 
-        lines.forEach((line) => {
+        rawLines.forEach((line) => {
             let cleanLine = line;
             hookTags.forEach(tag => {
                 const openTag = `[${tag}]`;
                 const closeTag = `[/${tag}]`;
                 if (cleanLine.includes(openTag)) {
-                    // Line numbers are 1-indexed for the UI typically, but let's check what UI uses. 
-                    // Usually 1-indexed. The current cleanLines length + 1 is the target line number.
                     hooks[tag] = cleanLines.length + 1;
                     cleanLine = cleanLine.replace(openTag, '').replace(closeTag, '');
                 }
@@ -156,8 +154,13 @@ export class LangLoader {
             cleanLines.push(cleanLine);
         });
 
+        // Final pass to collapse excessive blank lines (max 2 consecutive)
+        let finalCode = cleanLines.join('\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+
         return {
-            code: cleanLines.join('\n'),
+            code: finalCode,
             hooks: hooks
         };
     }
@@ -172,7 +175,7 @@ export class LangLoader {
             
             // If the arity matches, strip the positive tags but KEEP the content
             // If the arity DOES NOT match, remove the positive tags AND their content
-            const positiveRegex = new RegExp(`\\[${a}\\]([\\s\\S]*?)\\[\\/${a}\\]`, 'g');
+            const positiveRegex = new RegExp(`\\[${a}\\]([\\s\\S]*?)\\[\\/${a}\\]\\n?`, 'g');
             if (isMatch) {
                 result = result.replace(positiveRegex, '$1');
             } else {
@@ -182,7 +185,7 @@ export class LangLoader {
             // For negative tags [!arity]
             // If the arity matches, remove the negative tags AND their content
             // If the arity DOES NOT match, strip the negative tags but KEEP the content
-            const negativeRegex = new RegExp(`\\[!${a}\\]([\\s\\S]*?)\\[\\/!${a}\\]`, 'g');
+            const negativeRegex = new RegExp(`\\[!${a}\\]([\\s\\S]*?)\\[\\/!${a}\\]\\n?`, 'g');
             if (isMatch) {
                 result = result.replace(negativeRegex, '');
             } else {
