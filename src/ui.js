@@ -1,6 +1,6 @@
-import { Tree } from './tree.js';
-import { Animator, preorder, inorder, postorder } from './traversal.js';
-import { LangLoader } from './lang-loader.js';
+import { Tree } from './tree.js?v=1.1.0';
+import { Animator, preorder, inorder, postorder } from './traversal.js?v=1.1.0';
+import { LangLoader } from './lang-loader.js?v=1.1.0';
 
 let tree = new Tree();
 let animator = null;
