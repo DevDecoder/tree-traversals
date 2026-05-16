@@ -28,34 +28,33 @@ class Node:
 root = {{nestedTree}}
 MODE = "{{mode}}"
 
-[preorder]
-def preorder(node):
+[preorder]def preorder(node):
     [enter]if not node: return[/enter]
-    [visit]print(node.value)[/visit]
-    [nary]for child in node.children:
-        [move:next]preorder(child)[/move:next][/nary][!nary][move:left]preorder(node.left)[/move:left][ternary]
+    [visit]print(node.value)[/visit][nary]
+    for child in node.children:
+        [move:next]preorder(child)[/move:next][/nary][!nary]
+    [move:left]preorder(node.left)[/move:left][ternary]
     [move:middle]preorder(node.middle)[/move:middle][/ternary]
     [move:right]preorder(node.right)[/move:right][/!nary]
 [/preorder]
 
-[inorder]
-def inorder(node):
+[inorder]def inorder(node):
     [enter]if not node: return[/enter]
     [move:left]inorder(node.left)[/move:left]
     [visit]print(node.value)[/visit]
     [move:right]inorder(node.right)[/move:right]
 [/inorder]
 
-[postorder]
-def postorder(node):
-    [enter]if not node: return[/enter]
-    [nary]for child in node.children:
-        [move:next]postorder(child)[/move:next][/nary][!nary][move:left]postorder(node.left)[/move:left][ternary]
+[postorder]def postorder(node):
+    [enter]if not node: return[/enter][nary]
+    for child in node.children:
+        [move:next]postorder(child)[/move:next][/nary][!nary]
+    [move:left]postorder(node.left)[/move:left][ternary]
     [move:middle]postorder(node.middle)[/move:middle][/ternary]
     [move:right]postorder(node.right)[/move:right][/!nary]
     [visit]print(node.value)[/visit]
 [/postorder]
 
 if MODE == "PRE": preorder(root)
-elif MODE == "IN": inorder(root)
+[binary]elif MODE == "IN": inorder(root)[/binary]
 elif MODE == "POST": postorder(root)

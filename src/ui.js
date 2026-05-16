@@ -41,6 +41,8 @@ export function init() {
     els.stackPanel = document.getElementById('stack-panel');
     els.insights = document.getElementById('insights');
     els.btnRegenerate = document.getElementById('btn-regenerate');
+    els.checkFocus = document.getElementById('check-focus');
+    els.langCategories = document.getElementById('lang-categories');
 
     setupEventListeners();
     loadManifest().then(() => {
@@ -58,14 +60,26 @@ async function loadManifest() {
         manifest.languages.forEach(lang => {
             const option = document.createElement('option');
             option.value = lang.id;
-            // Use logo/name/categories for display if needed, but for now name + flag
-            option.textContent = `${lang.name} ${lang.categories || ''}`;
+            option.textContent = lang.name;
             els.langSelect.appendChild(option);
         });
 
-        if (manifest.languages.length > 0) {
-            currentLang = manifest.languages[0].id;
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        let targetLang = urlParams.get('lang') || 'javascript';
+        
+        // Show code panel by default if lang is passed, unless explicitly overridden
+        if (urlParams.has('lang') && !urlParams.has('code')) {
+            els.checkCode.checked = true;
+        } else if (urlParams.has('code')) {
+            els.checkCode.checked = urlParams.get('code') === 'true';
         }
+        
+        // Validate against loaded languages
+        const langExists = manifest.languages.some(l => l.id === targetLang);
+        currentLang = langExists ? targetLang : manifest.languages[0].id;
+        els.langSelect.value = currentLang;
+        updateVisibility();
     } catch (err) {
         console.error('Failed to load manifest:', err);
     }
@@ -143,6 +157,10 @@ function setupEventListeners() {
         refreshStack();
     };
 
+    els.checkFocus.onchange = async () => {
+        await updateCode();
+    };
+
     els.checkCode.onchange = () => updateVisibility();
     els.checkStack.onchange = () => updateVisibility();
     els.btnHideCode.onclick = () => { els.checkCode.checked = false; updateVisibility(); };
@@ -154,7 +172,9 @@ function setupEventListeners() {
     els.btnCopy.onclick = async () => {
         const loader = await getLoader(currentLang);
         if (loader) {
-            const result = loader.generateCode(tree.root, getArity(), currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN'));
+            const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
+            // Always copy full code, ignore focus mode
+            const result = loader.generateCode(tree.root, getArity(), mode, false);
             navigator.clipboard.writeText(result.code).then(() => {
                 const originalText = els.btnCopy.textContent;
                 els.btnCopy.textContent = 'Copied!';
@@ -494,8 +514,17 @@ async function updateCode() {
     const loader = await getLoader(currentLang);
     if (!loader) return;
 
+    // Update categories
+    const langInfo = manifest.languages.find(l => l.id === currentLang);
+    if (langInfo && langInfo.categories) {
+        els.langCategories.textContent = langInfo.categories;
+    } else {
+        els.langCategories.textContent = '';
+    }
+
     const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
-    const result = loader.generateCode(tree.root, getArity(), mode);
+    const isFocused = els.checkFocus.checked;
+    const result = loader.generateCode(tree.root, getArity(), mode, isFocused);
     
     currentHooks = result.hooks;
     
@@ -504,12 +533,13 @@ async function updateCode() {
     els.codeDisplay.className = `hljs language-${loader.meta.highlight || currentLang}`;
     
     if (window.hljs) {
+        delete els.codeDisplay.dataset.highlighted;
         window.hljs.highlightElement(els.codeDisplay);
     }
 
-    // Wrap lines for highlighting
+    // Wrap lines for highlighting (join with empty string to avoid extra text-node newlines)
     const lines = els.codeDisplay.innerHTML.split('\n');
     els.codeDisplay.innerHTML = lines
-        .map(line => `<span class="code-line">${line}</span>`)
-        .join('\n');
+        .map(line => `<span class="code-line">${line || ' '}</span>`)
+        .join('');
 }

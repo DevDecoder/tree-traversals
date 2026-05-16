@@ -28,8 +28,7 @@ root = {{nestedTree}}
 mode = "{{mode}}"
 [/setup]
 
-[preorder]
-procedure preorder(node)
+[preorder]procedure preorder(node)
     [enter]if node != Null then[/enter]
         [visit]print(node.value)[/visit]
         [move:left]preorder(node.left)[/move:left]
@@ -38,8 +37,7 @@ procedure preorder(node)
 endprocedure
 [/preorder]
 
-[inorder]
-procedure inorder(node)
+[inorder]procedure inorder(node)
     [enter]if node != Null then[/enter]
         [move:left]inorder(node.left)[/move:left]
         [visit]print(node.value)[/visit]
@@ -48,8 +46,7 @@ procedure inorder(node)
 endprocedure
 [/inorder]
 
-[postorder]
-procedure postorder(node)
+[postorder]procedure postorder(node)
     [enter]if node != Null then[/enter]
         [move:left]postorder(node.left)[/move:left]
         [move:right]postorder(node.right)[/move:right]
@@ -60,8 +57,8 @@ endprocedure
 
 if mode == "PRE" then
     preorder(root)
-elseif mode == "IN" then
-    inorder(root)
+[binary]elseif mode == "IN" then
+    inorder(root)[/binary]
 elseif mode == "POST" then
     postorder(root)
 endif

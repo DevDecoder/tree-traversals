@@ -35,20 +35,19 @@ class Node {
 
 public class Main {
 
-[preorder]
-    static void preOrder(Node node) {
+[preorder]    static void preOrder(Node node) {
         [enter]if (node == null) return;[/enter]
-        [visit]System.out.println(node.value);[/visit]
-        [nary]for (Node child : node.children) {
+        [visit]System.out.println(node.value);[/visit][nary]
+        for (Node child : node.children) {
             [move:next]preOrder(child);[/move:next]
-        }[/nary][!nary][move:left]preOrder(node.left);[/move:left][ternary]
+        }[/nary][!nary]
+        [move:left]preOrder(node.left);[/move:left][ternary]
         [move:middle]preOrder(node.middle);[/move:middle][/ternary]
         [move:right]preOrder(node.right);[/move:right][/!nary]
     }
 [/preorder]
 
-[inorder]
-    static void inOrder(Node node) {
+[inorder]    static void inOrder(Node node) {
         [enter]if (node == null) return;[/enter]
         [move:left]inOrder(node.left);[/move:left]
         [visit]System.out.println(node.value);[/visit]
@@ -56,12 +55,12 @@ public class Main {
     }
 [/inorder]
 
-[postorder]
-    static void postOrder(Node node) {
-        [enter]if (node == null) return;[/enter]
-        [nary]for (Node child : node.children) {
+[postorder]    static void postOrder(Node node) {
+        [enter]if (node == null) return;[/enter][nary]
+        for (Node child : node.children) {
             [move:next]postOrder(child);[/move:next]
-        }[/nary][!nary][move:left]postOrder(node.left);[/move:left][ternary]
+        }[/nary][!nary]
+        [move:left]postOrder(node.left);[/move:left][ternary]
         [move:middle]postOrder(node.middle);[/move:middle][/ternary]
         [move:right]postOrder(node.right);[/move:right][/!nary]
         [visit]System.out.println(node.value);[/visit]
@@ -72,8 +71,8 @@ public class Main {
         Node root = {{nestedTree}};
         String mode = "{{mode}}";
 
-        if (mode.equals("PRE")) preOrder(root);
-        else if (mode.equals("IN")) inOrder(root);
+        if (mode.equals("PRE")) preOrder(root);[binary]
+        else if (mode.equals("IN")) inOrder(root);[/binary]
         else if (mode.equals("POST")) postOrder(root);
     }
 }

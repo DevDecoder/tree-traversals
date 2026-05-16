@@ -126,7 +126,7 @@ main {
 #code-panel, #stack-panel {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: 0;
     overflow: hidden;
 }
 
@@ -324,7 +324,7 @@ select {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
     gap: 12px;
 }
 
@@ -340,8 +340,8 @@ select {
 }
 
 #code-display {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3) !important;
+    padding: 1rem 0 !important;
     border-radius: 0;
     font-size: 0.85rem;
     overflow: auto;
@@ -352,7 +352,7 @@ select {
 
 .code-line {
     display: block;
-    padding: 2px 8px;
+    padding: 2px 1.5rem;
     border-radius: 0;
     transition: all 0.2s;
 }
@@ -363,11 +363,31 @@ select {
     box-shadow: inset 3px 0 0 var(--accent-color);
 }
 
+.panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
 
 #stack-display {
     display: flex;
     flex-direction: column-reverse;
     gap: 4px;
+    padding: 0 1.5rem 1.5rem 1.5rem;
     overflow-y: auto;
     overflow-x: hidden;
 }

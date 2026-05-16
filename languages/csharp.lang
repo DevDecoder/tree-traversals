@@ -36,24 +36,19 @@ public class Node {
 }
 
 class Program {
-    static void Main() {
-        Node root = {{nestedTree}};
-        string mode = "{{mode}}";
-
-[preorder]
-    static void PreOrder(Node node) {
+[preorder]    static void PreOrder(Node node) {
         [enter]if (node == null) return;[/enter]
-        [visit]Console.WriteLine(node.Value);[/visit]
-        [nary]foreach (var child in node.Children) {
+        [visit]Console.WriteLine(node.Value);[/visit][nary]
+        foreach (var child in node.Children) {
             [move:next]PreOrder(child);[/move:next]
-        }[/nary][!nary][move:left]PreOrder(node.Left);[/move:left][ternary]
+        }[/nary][!nary]
+        [move:left]PreOrder(node.Left);[/move:left][ternary]
         [move:middle]PreOrder(node.Middle);[/move:middle][/ternary]
         [move:right]PreOrder(node.Right);[/move:right][/!nary]
     }
 [/preorder]
 
-[inorder]
-    static void InOrder(Node node) {
+[inorder]    static void InOrder(Node node) {
         [enter]if (node == null) return;[/enter]
         [move:left]InOrder(node.Left);[/move:left]
         [visit]Console.WriteLine(node.Value);[/visit]
@@ -61,20 +56,24 @@ class Program {
     }
 [/inorder]
 
-[postorder]
-    static void PostOrder(Node node) {
-        [enter]if (node == null) return;[/enter]
-        [nary]foreach (var child in node.Children) {
+[postorder]    static void PostOrder(Node node) {
+        [enter]if (node == null) return;[/enter][nary]
+        foreach (var child in node.Children) {
             [move:next]PostOrder(child);[/move:next]
-        }[/nary][!nary][move:left]PostOrder(node.Left);[/move:left][ternary]
+        }[/nary][!nary]
+        [move:left]PostOrder(node.Left);[/move:left][ternary]
         [move:middle]PostOrder(node.Middle);[/move:middle][/ternary]
         [move:right]PostOrder(node.Right);[/move:right][/!nary]
         [visit]Console.WriteLine(node.Value);[/visit]
     }
 [/postorder]
 
-        if (mode == "PRE") PreOrder(root);
-        else if (mode == "IN") InOrder(root);
+    static void Main() {
+        Node root = {{nestedTree}};
+        string mode = "{{mode}}";
+
+        if (mode == "PRE") PreOrder(root);[binary]
+        else if (mode == "IN") InOrder(root);[/binary]
         else if (mode == "POST") PostOrder(root);
     }
 }

@@ -91,11 +91,13 @@ public Node(int value, Node left = null, Node middle = null, Node right = null)
 
 ---
 
-## 4. Conditional Traversal Blocks
+## 4. Conditional Traversal Blocks & Focus Mode
 
-These blocks wrap the algorithm logic. When the user changes the "Traversal Mode" in the UI, we can toggle a setting to hide all other modes so only the active method is visible. (The full code is still present in the panel if the user chooses to view it, and copying the code will include everything).
+These blocks wrap the algorithm logic. The UI features a "Focus Mode" toggle. 
+- When **Focus Mode is ON** (default), the engine hides all traversal modes except the currently active one to keep the code panel clean for the student.
+- When **Focus Mode is OFF**, all traversal modes are shown simultaneously to provide a full, holistic view of the implementation.
 
-You define them as `[preorder]`, `[inorder]`, and `[postorder]`.
+You define positive traversal blocks as `[preorder]`, `[inorder]`, and `[postorder]`.
 
 ```javascript
 [preorder]
@@ -104,6 +106,20 @@ function preorder(node) {
 }
 [/preorder]
 ```
+
+### Focus Mode and Negative Blocks
+
+To support elegant code layouts when Focus Mode changes, the engine handles blocks differently depending on the Focus Mode state:
+
+- **Focus Mode ON (Default)**: The engine extracts *only* the contents of the currently active positive traversal blocks (e.g., `[preorder]`), active negative traversal blocks (e.g., `[!inorder]`), and `[focus]` blocks. **Any text outside of these blocks (like class definitions or execution boilerplate) is automatically hidden.** This ensures the student sees only the core algorithm.
+- **Focus Mode OFF**: The engine displays the entire file, stripping active traversal tags and keeping their content, while completely hiding any `[focus]` or negative traversal (`[!mode]`) blocks. 
+
+If you want specific boilerplate or helper functions to remain visible even when Focus Mode is ON, wrap them in `[focus]...[/focus]`:
+
+- **`[focus]...[/focus]`**: Always shown when Focus Mode is ON, hidden when Focus Mode is OFF.
+- **`[!preorder]...[/!preorder]`**: Shown when Focus Mode is ON and the active mode is *not* preorder.
+
+This automatic hiding of non-block text in Focus Mode allows you to write natural execution boilerplate (e.g., `if (mode === "PRE") preorder(root)`) at the bottom of your file without it cluttering the screen during focused study.
 
 **Note on In-Order**: In-order traversal is mathematically restricted to binary trees. Therefore, the `[inorder]` block is inherently treated as if it were wrapped in a `[binary]` tag; it will be automatically stripped when the user views Ternary or N-ary trees. You do NOT need to manually wrap it inside `[binary]...[/binary]`.
 

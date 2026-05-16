@@ -20,7 +20,7 @@ export class LangLoader {
         // Parse meta
         const metaMatch = content.match(/\[meta\]([\s\S]*?)\[\/meta\]/);
         if (metaMatch) {
-            metaMatch[1].split('\n').forEach(line => {
+            metaMatch[1].split(/\r?\n/).forEach(line => {
                 const parts = line.split(':');
                 if (parts.length >= 2) {
                     const key = parts[0].trim();
@@ -28,45 +28,68 @@ export class LangLoader {
                     this.meta[key] = val;
                 }
             });
-            content = content.replace(/\[meta\][\s\S]*?\[\/meta\]\n?/, '');
+            content = content.replace(/\[meta\][\s\S]*?\[\/meta\]\s*\n?/, '');
         }
 
-        // Extract structural blocks only (these don't appear in the final text directly)
+        // Extract structural blocks only
         ['node', 'leaf', 'empty'].forEach(block => {
-            const regex = new RegExp(`\\[${block}\\]([\\s\\S]*?)\\[\\/${block}\\]\\n?`);
+            const regex = new RegExp(`\\[${block}\\]([\\s\\S]*?)\\[\\/${block}\\]\\s*\\n?`);
             const match = content.match(regex);
             if (match) {
-                this.blocks[block] = match[1].replace(/^\n/, '').replace(/\n$/, ''); 
+                this.blocks[block] = match[1].replace(/^\r?\n/, '').replace(/\r?\n$/, ''); 
                 content = content.replace(regex, '');
             }
         });
 
-        this.globalTemplate = content.trim();
+        this.globalTemplate = content;
     }
 
-    generateCode(treeRoot, arity, mode) {
+    generateCode(treeRoot, arity, mode, isFocused = true) {
         let template = this.globalTemplate;
         
-        // 1. Process Mode (Traversal blocks)
-        ['preorder', 'inorder', 'postorder'].forEach(algo => {
-            const regex = new RegExp(`\\[${algo}\\]([\\s\\S]*?)\\[\\/${algo}\\]\\n?`, 'g');
-            // Check if this is the active mode
-            const isActive = (mode === 'PRE' && algo === 'preorder') ||
-                             (mode === 'IN' && algo === 'inorder') ||
-                             (mode === 'POST' && algo === 'postorder');
-            
-            // Special rule: inorder is implicitly binary.
-            // If the user selects inorder but we're in nary/ternary, it shouldn't show.
-            const isValidArity = !(algo === 'inorder' && arity !== 'binary');
+        const isPreActive = (mode === 'PRE');
+        const isInActive = (mode === 'IN' && arity === 'binary');
+        const isPostActive = (mode === 'POST');
 
-            if (isActive && isValidArity) {
-                // Strip the tags but keep the content
-                template = template.replace(regex, '$1');
-            } else {
-                // Completely remove the block
-                template = template.replace(regex, '');
+        if (isFocused) {
+            let result = '';
+            const regex = /\[(preorder|inorder|postorder|!preorder|!inorder|!postorder|focus)\]([\s\S]*?)\[\/\1\]/g;
+            let match;
+            while ((match = regex.exec(template)) !== null) {
+                const tag = match[1];
+                const content = match[2];
+                
+                let isActive = false;
+                if (tag === 'preorder') isActive = isPreActive;
+                else if (tag === 'inorder') isActive = isInActive;
+                else if (tag === 'postorder') isActive = isPostActive;
+                else if (tag === '!preorder') isActive = !isPreActive;
+                else if (tag === '!inorder') isActive = !isInActive && (arity === 'binary');
+                else if (tag === '!postorder') isActive = !isPostActive;
+                else if (tag === 'focus') isActive = true;
+
+                if (isActive) {
+                    result += content;
+                }
             }
-        });
+            template = result;
+        } else {
+            // Focus Mode OFF: Keep text outside, process valid blocks, drop [focus]
+            ['preorder', 'inorder', 'postorder'].forEach(algo => {
+                const isValidArity = !(algo === 'inorder' && arity !== 'binary');
+                
+                // Keep positive blocks if valid arity, else remove
+                const posRegex = new RegExp(`\\[${algo}\\]([\\s\\S]*?)\\[\\/${algo}\\]`, 'g');
+                template = template.replace(posRegex, isValidArity ? '$1' : '');
+                
+                // Remove all negative blocks (only used for Focus Mode)
+                const negRegex = new RegExp(`\\[!${algo}\\]([\\s\\S]*?)\\[\\/!${algo}\\]`, 'g');
+                template = template.replace(negRegex, '');
+            });
+            
+            // KEEP [focus] block content (strip tags)
+            template = template.replace(/\[focus\]([\s\S]*?)\[\/focus\]/g, '$1');
+        }
 
         // 2. Process Arity logic across the entire text space
         template = this.processArity(template, arity);
@@ -80,20 +103,26 @@ export class LangLoader {
         const evaluateNode = (node, parent) => {
             if (!node) return emptyTpl;
 
-            const isLeaf = !node.left && !node.right && !node.middle && (!node.children || node.children.length === 0);
+            // Map children to logical positions for fixed-arity templates
+            const children = node.children || [];
+            const left = children.length > 0 ? children[0] : null;
+            const right = children.length > 0 ? children[children.length - 1] : null;
+            const middle = children.length > 0 ? children[Math.ceil((children.length - 1) / 2)] : null;
+
+            const isLeaf = children.length === 0;
             let str = isLeaf ? leafTpl : nodeTpl;
 
             // Value replacements
             str = str.replace(/\{\{value\}\}/g, node.value !== undefined ? node.value : "NULL");
             str = str.replace(/\{\{parentValue\}\}/g, parent ? parent.value : "NULL");
-            str = str.replace(/\{\{leftValue\}\}/g, node.left ? node.left.value : "NULL");
-            str = str.replace(/\{\{middleValue\}\}/g, node.middle ? node.middle.value : "NULL");
-            str = str.replace(/\{\{rightValue\}\}/g, node.right ? node.right.value : "NULL");
+            str = str.replace(/\{\{leftValue\}\}/g, left ? left.value : "NULL");
+            str = str.replace(/\{\{middleValue\}\}/g, middle ? middle.value : "NULL");
+            str = str.replace(/\{\{rightValue\}\}/g, right ? right.value : "NULL");
 
             // Recursive Replacements
-            if (str.includes('{{left}}')) str = str.replace(/\{\{left\}\}/g, evaluateNode(node.left, node));
-            if (str.includes('{{middle}}')) str = str.replace(/\{\{middle\}\}/g, evaluateNode(node.middle, node));
-            if (str.includes('{{right}}')) str = str.replace(/\{\{right\}\}/g, evaluateNode(node.right, node));
+            if (str.includes('{{left}}')) str = str.replace(/\{\{left\}\}/g, evaluateNode(left, node));
+            if (str.includes('{{middle}}')) str = str.replace(/\{\{middle\}\}/g, evaluateNode(middle, node));
+            if (str.includes('{{right}}')) str = str.replace(/\{\{right\}\}/g, evaluateNode(right, node));
 
             // Process N-ary Children
             if (str.includes('[children]')) {
@@ -138,7 +167,7 @@ export class LangLoader {
         const hooks = {};
         const hookTags = ['enter', 'visit', 'move:left', 'move:middle', 'move:right', 'move:next'];
         
-        const rawLines = template.split('\n');
+        const rawLines = template.split(/\r?\n/);
         const cleanLines = [];
 
         rawLines.forEach((line) => {
