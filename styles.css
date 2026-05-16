@@ -109,12 +109,26 @@ main {
     align-items: center;
     margin-bottom: 0.8rem;
     font-size: 0.9rem;
+    gap: 1rem;
+}
+
+.range-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
 }
 
 input[type="range"] {
-    flex: 1;
-    margin: 0 10px;
+    width: 100%;
     accent-color: var(--accent-color);
+}
+
+#depth-range, #child-range {
+    min-width: 50px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--accent-color);
 }
 
 .btn-primary {
@@ -237,15 +251,12 @@ select {
     transform: scale(1.05);
 }
 
-.print-indicator {
-    font-size: 0.8rem;
+.print-result {
+    font-size: 0.9rem;
     margin-left: 8px;
-    animation: blink 0.5s infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 @keyframes slide-in {

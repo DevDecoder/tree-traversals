@@ -16,29 +16,23 @@ export class Tree {
         this.nodes = [];
     }
 
-    generateRandom(maxDepth, maxChildren = 2, isBST = false) {
+    generateRandom(minDepth, maxDepth, minChildren, maxChildren) {
         this.nodes = [];
         let idCounter = 0;
 
-        const createNode = (depth, minValue = 1, maxValue = 100) => {
+        const createNode = (depth) => {
             if (depth > maxDepth) return null;
-            if (depth > 1 && Math.random() > 0.8) return null; // Add some randomness to shape
 
-            const value = isBST 
-                ? Math.floor(Math.random() * (maxValue - minValue)) + minValue
-                : Math.floor(Math.random() * 100);
-            
+            const value = Math.floor(Math.random() * 100);
             const node = new Node(idCounter++, value);
             node.depth = depth;
             this.nodes.push(node);
 
-            if (isBST) {
-                node.left = createNode(depth + 1, minValue, value);
-                node.right = createNode(depth + 1, value, maxValue);
-            } else {
-                node.left = createNode(depth + 1);
-                if (maxChildren > 1) node.right = createNode(depth + 1);
-            }
+            const minC = depth < minDepth ? Math.max(1, minChildren) : 0;
+            const numChildren = Math.floor(Math.random() * (maxChildren - minC + 1)) + minC;
+
+            if (numChildren >= 1) node.left = createNode(depth + 1);
+            if (numChildren >= 2) node.right = createNode(depth + 1);
 
             return node;
         };

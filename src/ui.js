@@ -9,10 +9,12 @@ let currentLang = 'js';
 
 const els = {
     canvas: document.getElementById('tree-canvas'),
-    depthSlider: document.getElementById('depth-slider'),
-    childSlider: document.getElementById('child-slider'),
-    depthVal: document.getElementById('depth-val'),
-    childVal: document.getElementById('child-val'),
+    minDepth: document.getElementById('min-depth-slider'),
+    maxDepth: document.getElementById('max-depth-slider'),
+    minChild: document.getElementById('min-child-slider'),
+    maxChild: document.getElementById('max-child-slider'),
+    depthRange: document.getElementById('depth-range'),
+    childRange: document.getElementById('child-range'),
     btnGenerate: document.getElementById('btn-generate'),
     traversalSelect: document.getElementById('traversal-select'),
     btnPlay: document.getElementById('btn-play'),
@@ -32,8 +34,15 @@ export function init() {
 }
 
 function setupEventListeners() {
-    els.depthSlider.oninput = (e) => { els.depthVal.textContent = e.target.value; };
-    els.childSlider.oninput = (e) => { els.childVal.textContent = e.target.value; };
+    const updateRanges = () => {
+        els.depthRange.textContent = `${els.minDepth.value} - ${els.maxDepth.value}`;
+        els.childRange.textContent = `${els.minChild.value} - ${els.maxChild.value}`;
+    };
+
+    els.minDepth.oninput = updateRanges;
+    els.maxDepth.oninput = updateRanges;
+    els.minChild.oninput = updateRanges;
+    els.maxChild.oninput = updateRanges;
     
     els.btnGenerate.onclick = regenerate;
     
@@ -91,7 +100,16 @@ function setupEventListeners() {
 
 function regenerate() {
     reset();
-    tree.generateRandom(parseInt(els.depthSlider.value), parseInt(els.childSlider.value));
+    const minD = parseInt(els.minDepth.value);
+    const maxD = parseInt(els.maxDepth.value);
+    const minC = parseInt(els.minChild.value);
+    const maxC = parseInt(els.maxChild.value);
+    
+    // Safety check: min should not exceed max
+    tree.generateRandom(
+        Math.min(minD, maxD), Math.max(minD, maxD),
+        Math.min(minC, maxC), Math.max(minC, maxC)
+    );
     tree.render(els.canvas);
 }
 
@@ -179,10 +197,10 @@ function updateStack(node, type) {
     } else if (type === 'visit') {
         if (lastFrame) {
             lastFrame.classList.add('active-visit');
-            const indicator = document.createElement('span');
-            indicator.className = 'print-indicator';
-            indicator.textContent = ' 📄';
-            lastFrame.appendChild(indicator);
+            const result = document.createElement('span');
+            result.className = 'print-result';
+            result.textContent = ` -> ${node.value}`;
+            lastFrame.appendChild(result);
         }
     } else if (type === 'exit') {
         if (frames.length > 0) {
