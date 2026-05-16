@@ -1,0 +1,58 @@
+{
+    "languages": [
+        {
+            "name": "C#",
+            "id": "csharp",
+            "categories": "🇬🇧 AQA, 🇬🇧 OCR",
+            "highlight": "csharp",
+            "logo": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg",
+            "file": "csharp.lang"
+        },
+        {
+            "name": "Java",
+            "id": "java",
+            "categories": "🇬🇧 OCR",
+            "highlight": "java",
+            "logo": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",
+            "file": "java.lang"
+        },
+        {
+            "name": "JavaScript",
+            "id": "javascript",
+            "categories": "🇬🇧 AQA, 🇬🇧 OCR, 🇬🇧 Edexcel",
+            "highlight": "javascript",
+            "logo": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",
+            "file": "javascript.lang"
+        },
+        {
+            "name": "AQA Pseudocode",
+            "id": "pseudocode-aqa",
+            "categories": "🇬🇧 AQA, Pseudocode",
+            "highlight": "plaintext",
+            "file": "pseudocode-aqa.lang"
+        },
+        {
+            "name": "OCR Pseudocode",
+            "id": "pseudocode-ocr",
+            "categories": "🇬🇧 OCR, Pseudocode",
+            "highlight": "plaintext",
+            "file": "pseudocode-ocr.lang"
+        },
+        {
+            "name": "Python",
+            "id": "python",
+            "categories": "🇬🇧 AQA, 🇬🇧 OCR, 🇬🇧 Edexcel, 🇬🇧 Cambridge, 🇬🇧 WJEC, 🇬🇧 CCEA",
+            "highlight": "python",
+            "logo": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
+            "file": "python.lang"
+        },
+        {
+            "name": "T-SQL (SQL Server)",
+            "id": "tsql",
+            "categories": "Relational",
+            "highlight": "sql",
+            "logo": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg",
+            "file": "tsql.lang"
+        }
+    ]
+}

@@ -1,11 +1,14 @@
 import { Tree } from './tree.js';
 import { Animator, preorder, inorder, postorder } from './traversal.js';
-import { getSnippets } from './snippets.js';
+import { LangLoader } from './lang-loader.js';
 
 let tree = new Tree();
 let animator = null;
 let currentTraversal = 'preorder';
-let currentLang = 'js';
+let currentLang = 'javascript';
+let loaders = {};
+let currentHooks = {};
+let manifest = null;
 
 const els = {};
 
@@ -40,7 +43,49 @@ export function init() {
     els.btnRegenerate = document.getElementById('btn-regenerate');
 
     setupEventListeners();
-    regenerate();
+    loadManifest().then(() => {
+        regenerate();
+    });
+}
+
+async function loadManifest() {
+    try {
+        const response = await fetch('manifest.json');
+        manifest = await response.json();
+        
+        // Populate lang select
+        els.langSelect.innerHTML = '';
+        manifest.languages.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang.id;
+            // Use logo/name/categories for display if needed, but for now name + flag
+            option.textContent = `${lang.name} ${lang.categories || ''}`;
+            els.langSelect.appendChild(option);
+        });
+
+        if (manifest.languages.length > 0) {
+            currentLang = manifest.languages[0].id;
+        }
+    } catch (err) {
+        console.error('Failed to load manifest:', err);
+    }
+}
+
+async function getLoader(langId) {
+    if (loaders[langId]) return loaders[langId];
+    
+    const langInfo = manifest.languages.find(l => l.id === langId);
+    if (!langInfo) return null;
+
+    try {
+        const response = await fetch(`languages/${langInfo.file}`);
+        const content = await response.text();
+        loaders[langId] = new LangLoader(content);
+        return loaders[langId];
+    } catch (err) {
+        console.error(`Failed to load language ${langId}:`, err);
+        return null;
+    }
 }
 
 // Syncs the Play button's label AND colour class with the current state.
@@ -86,15 +131,15 @@ function setupEventListeners() {
         regenerate();
     };
     
-    els.traversalSelect.onchange = (e) => {
+    els.traversalSelect.onchange = async (e) => {
         currentTraversal = e.target.value;
         reset();
-        updateCode();
+        await updateCode();
     };
 
-    els.langSelect.onchange = (e) => {
+    els.langSelect.onchange = async (e) => {
         currentLang = e.target.value;
-        updateCode();
+        await updateCode();
         refreshStack();
     };
 
@@ -106,13 +151,16 @@ function setupEventListeners() {
     // Initial visibility
     updateVisibility();
 
-    els.btnCopy.onclick = () => {
-        const code = getSnippets(currentLang, currentTraversal, tree, parseInt(els.maxChild.value), false);
-        navigator.clipboard.writeText(code).then(() => {
-            const originalText = els.btnCopy.textContent;
-            els.btnCopy.textContent = 'Copied!';
-            setTimeout(() => { els.btnCopy.textContent = originalText; }, 2000);
-        });
+    els.btnCopy.onclick = async () => {
+        const loader = await getLoader(currentLang);
+        if (loader) {
+            const result = loader.generateCode(tree.root, getArity(), currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN'));
+            navigator.clipboard.writeText(result.code).then(() => {
+                const originalText = els.btnCopy.textContent;
+                els.btnCopy.textContent = 'Copied!';
+                setTimeout(() => { els.btnCopy.textContent = originalText; }, 2000);
+            });
+        }
     };
 
     els.btnPlay.onclick = () => {
@@ -263,7 +311,7 @@ function updateInOrderAvailability() {
     }
 }
 
-function regenerate() {
+async function regenerate() {
     reset();
     const minD = parseInt(els.minDepth.value);
     const maxD = parseInt(els.maxDepth.value);
@@ -278,7 +326,14 @@ function regenerate() {
         Math.min(minC, maxC), Math.max(minC, maxC)
     );
     tree.render(els.canvas);
-    updateCode();
+    await updateCode();
+}
+
+function getArity() {
+    const maxC = parseInt(els.maxChild.value);
+    if (maxC === 2) return 'binary';
+    if (maxC === 3) return 'ternary';
+    return 'nary';
 }
 
 function reset() {
@@ -349,22 +404,17 @@ async function handleStep(step) {
     const lineEls = els.codeDisplay.querySelectorAll('.code-line');
     lineEls.forEach(l => l.classList.remove('highlight'));
 
-    const lines = Array.from(lineEls).map(el => el.textContent);
-    
-    const funcNameNeedle = currentLang === 'csharp' 
-        ? `${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(` 
-        : `${currentTraversal}(`;
-    const funcStart = lines.findIndex(l => l.includes(funcNameNeedle) && (l.includes('function') || l.includes('def') || l.includes('static void')));
-    
     let targetIndex = -1;
-    if (type === 'visit') {
-        targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine')));
+    if (type === 'enter') {
+        targetIndex = currentHooks.enter - 1;
+    } else if (type === 'visit') {
+        targetIndex = currentHooks.visit - 1;
     } else if (side) {
-        const needle = side === 'left' ? '.left' : (side === 'right' ? '.right' : '.middle');
-        const capNeedle = needle.charAt(0) + needle.charAt(1).toUpperCase() + needle.slice(2);
-        targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes(needle) || l.includes(capNeedle)));
-        if (targetIndex === -1) {
-            targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('children') || l.includes('child') || l.includes(funcNameNeedle)));
+        const hookKey = `move:${side}`;
+        if (currentHooks[hookKey]) {
+            targetIndex = currentHooks[hookKey] - 1;
+        } else if (currentHooks['move:next']) {
+            targetIndex = currentHooks['move:next'] - 1;
         }
     }
 
@@ -439,12 +489,17 @@ function updateVisibility() {
     els.resizerH.classList.toggle('hidden', !showInsights);
 }
 
-function updateCode() {
-    const maxChildren = parseInt(els.maxChild.value);
-    // Focus mode is gone, but we still need snippets
-    const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, false);
+async function updateCode() {
+    if (!manifest) return;
+    const loader = await getLoader(currentLang);
+    if (!loader) return;
+
+    const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
+    const result = loader.generateCode(tree.root, getArity(), mode);
     
-    els.codeDisplay.innerHTML = code.split('\n')
+    currentHooks = result.hooks;
+    
+    els.codeDisplay.innerHTML = result.code.split('\n')
         .map(line => `<span class="code-line">${line}</span>`)
         .join('\n');
 }
