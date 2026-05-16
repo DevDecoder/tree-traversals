@@ -27,8 +27,11 @@ export function init() {
     els.codeDisplay = document.querySelector('#code-display code');
     els.stackDisplay = document.getElementById('stack-display');
     els.sequenceList = document.getElementById('sequence-list');
-    els.checkFocus = document.getElementById('check-focus');
+    els.checkCode = document.getElementById('check-code');
+    els.checkStack = document.getElementById('check-stack');
     els.btnCopy = document.getElementById('btn-copy');
+    els.btnHideCode = document.getElementById('btn-hide-code');
+    els.btnHideStack = document.getElementById('btn-hide-stack');
     els.resizerH = document.getElementById('resizer');
     els.resizerV = document.getElementById('v-resizer');
     els.codePanel = document.getElementById('code-panel');
@@ -88,7 +91,13 @@ function setupEventListeners() {
         refreshStack();
     };
 
-    els.checkFocus.onchange = updateCode;
+    els.checkCode.onchange = () => updateVisibility();
+    els.checkStack.onchange = () => updateVisibility();
+    els.btnHideCode.onclick = () => { els.checkCode.checked = false; updateVisibility(); };
+    els.btnHideStack.onclick = () => { els.checkStack.checked = false; updateVisibility(); };
+
+    // Initial visibility
+    updateVisibility();
 
     els.btnCopy.onclick = () => {
         const code = getSnippets(currentLang, currentTraversal, tree, parseInt(els.maxChild.value), false);
@@ -344,10 +353,21 @@ function refreshStack() {
     });
 }
 
+function updateVisibility() {
+    const showCode = els.checkCode.checked;
+    const showStack = els.checkStack.checked;
+
+    els.codePanel.classList.toggle('hidden', !showCode);
+    els.stackPanel.classList.toggle('hidden', !showStack);
+
+    // Hide vertical resizer if either panel is hidden
+    els.resizerV.classList.toggle('hidden', !showCode || !showStack);
+}
+
 function updateCode() {
     const maxChildren = parseInt(els.maxChild.value);
-    const focusMode = els.checkFocus.checked;
-    const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, focusMode);
+    // Focus mode is gone, but we still need snippets
+    const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, false);
     
     els.codeDisplay.innerHTML = code.split('\n')
         .map(line => `<span class="code-line">${line}</span>`)

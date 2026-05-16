@@ -73,12 +73,8 @@
                     <input type="checkbox" id="check-stack" checked>
                 </div>
                 <div class="toggle-row">
-                    <label>Code Snippet</label>
-                    <input type="checkbox" id="check-code" checked>
-                </div>
-                <div class="toggle-row">
-                    <label>Focus Mode</label>
-                    <input type="checkbox" id="check-focus" checked>
+                    <label>Code</label>
+                    <input type="checkbox" id="check-code"> <!-- Hidden by default -->
                 </div>
             </section>
         </aside>
@@ -95,7 +91,7 @@
         <aside id="insights" class="glass">
             <div id="code-panel" class="panel">
                 <div class="panel-header">
-                    <h3>Code Snippet</h3>
+                    <h3>Code</h3>
                     <div class="header-actions">
                         <select id="lang-select">
                             <option value="js">Javascript</option>
@@ -103,6 +99,7 @@
                             <option value="csharp">C#</option>
                         </select>
                         <button id="btn-copy" class="btn-secondary">Copy</button>
+                        <button id="btn-hide-code" class="btn-icon" title="Hide Code">×</button>
                     </div>
                 </div>
                 <pre id="code-display" class="jetbrains-mono"><code></code></pre>
@@ -111,7 +108,10 @@
             <div id="v-resizer"></div>
 
             <div id="stack-panel" class="panel">
-                <h3>Call Stack</h3>
+                <div class="panel-header">
+                    <h3>Call Stack</h3>
+                    <button id="btn-hide-stack" class="btn-icon" title="Hide Stack">×</button>
+                </div>
                 <div id="stack-display">
                     <!-- Stack frames -->
                 </div>
