@@ -64,8 +64,13 @@ export class Animator {
     }
 
     setSpeed(val) {
-        // Map 1-10 to 2000ms - 100ms
-        this.speed = 2000 - (val * 190);
+        // Map 1-20 to 2000ms - 1ms
+        // Higher values are faster (shorter delays)
+        if (val >= 20) {
+            this.speed = 1;
+        } else {
+            this.speed = Math.max(1, 2000 * Math.pow(0.65, val - 1));
+        }
     }
 
     async step() {

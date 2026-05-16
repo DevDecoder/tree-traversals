@@ -33,6 +33,7 @@ export function init() {
     els.sequenceList = document.getElementById('sequence-list');
     els.checkCode = document.getElementById('check-code');
     els.checkStack = document.getElementById('check-stack');
+    els.checkTrace = document.getElementById('check-trace');
     els.btnCopy = document.getElementById('btn-copy');
     els.btnHideCode = document.getElementById('btn-hide-code');
     els.btnHideStack = document.getElementById('btn-hide-stack');
@@ -45,6 +46,7 @@ export function init() {
     els.checkFocus = document.getElementById('check-focus');
     els.langCategories = document.getElementById('lang-categories');
     els.btnTheme = document.getElementById('btn-theme');
+    els.langLogo = document.getElementById('lang-logo');
 
     // Load theme from localStorage
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -94,6 +96,19 @@ async function loadManifest() {
 
         const urlParams = new URLSearchParams(window.location.search);
         
+        if (urlParams.has('categories')) {
+            const cats = urlParams.get('categories').split(',').map(c => c.trim());
+            cats.forEach(cat => {
+                if (allCategories.has(cat)) {
+                    activeCategories.add(cat);
+                    const badges = Array.from(els.langCategories.querySelectorAll('.category-badge'));
+                    const badge = badges.find(b => b.textContent === cat);
+                    if (badge) badge.classList.add('active');
+                }
+            });
+            refreshLangList();
+        }
+
         let targetLang = urlParams.get('lang') || 'javascript';
         
         // Show code panel by default if lang is passed, unless explicitly overridden
@@ -102,6 +117,10 @@ async function loadManifest() {
         } else if (urlParams.has('code')) {
             els.checkCode.checked = urlParams.get('code') === 'true';
         }
+        
+        if (urlParams.has('traceLine')) els.checkTrace.checked = urlParams.get('traceLine') === 'true';
+        if (urlParams.has('callStack')) els.checkStack.checked = urlParams.get('callStack') === 'true';
+        if (urlParams.has('focus')) els.checkFocus.checked = urlParams.get('focus') === 'true';
         
         // Validate against loaded languages
         const langExists = manifest.languages.some(l => l.id === targetLang);
@@ -221,6 +240,12 @@ function setupEventListeners() {
 
     els.checkCode.onchange = () => updateVisibility();
     els.checkStack.onchange = () => updateVisibility();
+    els.checkTrace.onchange = () => {
+        if (!els.checkTrace.checked) {
+            const lineEls = els.codeDisplay.querySelectorAll('.code-line');
+            lineEls.forEach(l => l.classList.remove('highlight'));
+        }
+    };
     els.btnHideCode.onclick = () => { els.checkCode.checked = false; updateVisibility(); };
     els.btnHideStack.onclick = () => { els.checkStack.checked = false; updateVisibility(); };
 
@@ -512,7 +537,7 @@ async function handleStep(step) {
         }
     }
 
-    if (targetIndex !== -1 && lineEls[targetIndex]) {
+    if (els.checkTrace.checked && targetIndex !== -1 && lineEls[targetIndex]) {
         lineEls[targetIndex].classList.add('highlight');
         lineEls[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -599,6 +624,13 @@ async function updateCode() {
         // without messing with the active filters
         b.style.opacity = (currentCats.includes(b.textContent)) ? '1' : '0.6';
     });
+
+    if (loader.meta.logo) {
+        els.langLogo.src = loader.meta.logo;
+        els.langLogo.classList.remove('hidden');
+    } else {
+        els.langLogo.classList.add('hidden');
+    }
 
     const mode = currentTraversal.toUpperCase().substring(0, 4).replace('PREO', 'PRE').replace('POST', 'POST').replace('INOR', 'IN');
     const isFocused = els.checkFocus.checked;

@@ -1,11 +1,17 @@
 import fs from 'fs';
 import path from 'path';
+import { validateAll } from './validate-all.mjs';
 
 const languagesDir = './languages';
 const outputFile = './manifest.json';
 
-const languages = [];
+// Run validation first
+if (!validateAll()) {
+    console.error('Manifest generation aborted due to validation errors.');
+    process.exit(1);
+}
 
+const languages = [];
 const files = fs.readdirSync(languagesDir);
 
 files.forEach(file => {
@@ -15,7 +21,7 @@ files.forEach(file => {
         
         if (metaMatch) {
             const meta = {};
-            metaMatch[1].split('\n').forEach(line => {
+            metaMatch[1].split(/\r?\n/).forEach(line => {
                 const parts = line.split(':');
                 if (parts.length >= 2) {
                     const key = parts[0].trim();
@@ -25,8 +31,11 @@ files.forEach(file => {
             });
             
             if (meta.id) {
+                // Minimal manifest: only id, name, categories, and file
                 languages.push({
-                    ...meta,
+                    id: meta.id,
+                    name: meta.name,
+                    categories: meta.categories || '',
                     file: file
                 });
             }

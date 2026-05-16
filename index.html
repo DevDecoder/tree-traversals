@@ -67,7 +67,7 @@
                 </div>
                 <div class="input-row">
                     <label>Speed</label>
-                    <input type="range" id="speed-slider" min="1" max="10" value="5">
+                    <input type="range" id="speed-slider" min="1" max="30" value="10">
                 </div>
             </section>
 
@@ -114,9 +114,12 @@
                 <pre id="code-display" class="jetbrains-mono"><code></code></pre>
                 <div class="panel-footer">
                     <span id="lang-categories"></span>
-                    <label class="checkbox-label" title="Only show code for the selected traversal mode">
-                        <input type="checkbox" id="check-focus" checked> Focus Mode
-                    </label>
+                    <div class="footer-controls">
+                        <img id="lang-logo" class="lang-logo hidden" alt="Language Logo">
+                        <label class="checkbox-label" title="Only show code for the selected traversal mode">
+                            <input type="checkbox" id="check-focus" checked> Focus Mode
+                        </label>
+                    </div>
                 </div>
             </div>
 

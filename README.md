@@ -2,7 +2,7 @@
 
 An interactive, visual explorer for binary and n-ary tree traversal algorithms, designed for A-Level Computer Science students and anyone learning tree traversals for the first time.
 
-🚀 **[Live demo →](https://devdecoder.github.io/tree-traversals/)**
+🚀 **[Live demo →](https://pages.devdecoder.com/tree-traversals/)**
 
 ---
 
@@ -17,6 +17,19 @@ An interactive, visual explorer for binary and n-ary tree traversal algorithms, 
 - **Sequence bar** — the visited node sequence builds up as the traversal progresses
 - **Dark / light theme toggle**
 - **Resizable panels** — drag the dividers to customise the layout; hide the Code or Call Stack panels independently
+
+---
+
+## URL Parameters
+
+You can customise the initial state of the application using URL parameters. This is useful for creating shareable links with specific configurations.
+
+- `lang` — Set the initial language (e.g., `?lang=python`).
+- `categories` — Filter the language dropdown to show only languages matching the specified categories (comma-separated, e.g., `?categories=AQA,OCR`).
+- `code` — Toggle the visibility of the code panel (`true` or `false`).
+- `callStack` — Toggle the visibility of the call stack panel (`true` or `false`).
+- `traceLine` — Toggle the code line tracing (`true` or `false`).
+- `focus` — Toggle focus mode, hiding boilerplate code (`true` or `false`).
 
 ---
 

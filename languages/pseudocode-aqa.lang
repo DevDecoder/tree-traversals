@@ -58,8 +58,8 @@ ENDSUBROUTINE
 
 IF mode = "PRE" THEN
     Preorder(root)
-ELSE IF mode = "IN" THEN
-    Inorder(root)
+[binary]ELSE IF mode = "IN" THEN
+    Inorder(root)[/binary]
 ELSE IF mode = "POST" THEN
     Postorder(root)
 ENDIF

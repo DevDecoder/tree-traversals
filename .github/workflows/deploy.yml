@@ -30,6 +30,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Generate Manifest
+        run: node scripts/generate-manifest.mjs
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
