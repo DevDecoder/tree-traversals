@@ -313,9 +313,6 @@ select {
     box-shadow: inset 3px 0 0 var(--accent-color);
 }
 
-.code-line.collapsed {
-    display: none;
-}
 
 #stack-display {
     display: flex;

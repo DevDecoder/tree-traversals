@@ -349,38 +349,7 @@ function updateCode() {
     const focusMode = els.checkFocus.checked;
     const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, focusMode);
     
-    const lines = code.split('\n');
-    const funcNameNeedle = currentLang === 'csharp' 
-        ? `${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(` 
-        : `${currentTraversal}(`;
-
-    const otherMethods = ['preorder', 'inorder', 'postorder'].filter(m => m !== currentTraversal);
-    const otherMethodNeedles = otherMethods.map(m => currentLang === 'csharp' ? `${m.charAt(0).toUpperCase() + m.slice(1)}(` : `${m}(`);
-
-    let isCollapsed = false;
-    
-    els.codeDisplay.innerHTML = lines.map(line => {
-        const trimmed = line.trim();
-        
-        // Detect start of an "other" method
-        if (focusMode) {
-            if (otherMethodNeedles.some(n => trimmed.includes(n) && (trimmed.includes('function') || trimmed.includes('def') || trimmed.includes('static void')))) {
-                isCollapsed = true;
-            }
-        }
-
-        const className = `code-line${isCollapsed ? ' collapsed' : ''}`;
-        
-        // Detect end of method (closing brace or return/end of block)
-        if (isCollapsed) {
-            if (trimmed === '}' || (currentLang === 'python' && trimmed === '' && line !== '')) {
-                // Keep the closing brace/last line but stop collapsing after it
-                const result = `<span class="${className}">${line}</span>`;
-                isCollapsed = false;
-                return result;
-            }
-        }
-
-        return `<span class="${className}">${line}</span>`;
-    }).join('\n');
+    els.codeDisplay.innerHTML = code.split('\n')
+        .map(line => `<span class="code-line">${line}</span>`)
+        .join('\n');
 }
