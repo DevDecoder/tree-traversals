@@ -24,7 +24,13 @@ const els = {
     langSelect: document.getElementById('lang-select'),
     codeDisplay: document.querySelector('#code-display code'),
     stackDisplay: document.getElementById('stack-display'),
-    sequenceList: document.getElementById('sequence-list')
+    sequenceList: document.getElementById('sequence-list'),
+    checkFocus: document.getElementById('check-focus'),
+    resizerH: document.getElementById('resizer'),
+    resizerV: document.getElementById('v-resizer'),
+    codePanel: document.getElementById('code-panel'),
+    stackPanel: document.getElementById('stack-panel'),
+    insights: document.getElementById('insights')
 };
 
 export function init() {
@@ -57,6 +63,8 @@ function setupEventListeners() {
         updateCode();
         refreshStack();
     };
+
+    els.checkFocus.onchange = updateCode;
 
     els.btnPlay.onclick = () => {
         if (!animator || animator.isFinished) {
@@ -121,27 +129,44 @@ function setupEventListeners() {
         refreshStack();
     };
 
-    // Resizer Logic
-    const resizer = document.getElementById('resizer');
-    const insights = document.getElementById('insights');
-    let isResizing = false;
-
-    resizer.addEventListener('mousedown', (e) => {
-        isResizing = true;
+    // Horizontal Resizer
+    let isResizingH = false;
+    els.resizerH.onmousedown = (e) => {
+        isResizingH = true;
         document.body.style.cursor = 'col-resize';
         e.preventDefault();
-    });
+    };
+
+    // Vertical Resizer
+    let isResizingV = false;
+    els.resizerV.onmousedown = (e) => {
+        isResizingV = true;
+        document.body.style.cursor = 'row-resize';
+        e.preventDefault();
+    };
 
     document.addEventListener('mousemove', (e) => {
-        if (!isResizing) return;
-        const width = window.innerWidth - e.clientX;
-        if (width > 250 && width < window.innerWidth * 0.6) {
-            insights.style.width = `${width}px`;
+        if (isResizingH) {
+            const width = window.innerWidth - e.clientX;
+            if (width > 250 && width < window.innerWidth * 0.8) {
+                els.insights.style.width = `${width}px`;
+            }
+        }
+        if (isResizingV) {
+            const rect = els.insights.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const topRatio = y / rect.height;
+            const bottomRatio = 1 - topRatio;
+            if (topRatio > 0.1 && bottomRatio > 0.1) {
+                els.codePanel.style.flex = topRatio;
+                els.stackPanel.style.flex = bottomRatio;
+            }
         }
     });
 
     document.addEventListener('mouseup', () => {
-        isResizing = false;
+        isResizingH = false;
+        isResizingV = false;
         document.body.style.cursor = 'default';
     });
 
@@ -209,6 +234,9 @@ async function handleStep(step) {
     const nodeEl = document.getElementById(`node-${node.id}`);
     nodeEl.classList.add('active');
     
+    // Auto-scroll the visualization panel to keep the active node in view
+    nodeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    
     if (type === 'visit') {
         nodeEl.classList.add('visited');
         addToSequence(node.value);
@@ -221,28 +249,36 @@ async function handleStep(step) {
     lineEls.forEach(l => l.classList.remove('highlight'));
 
     const lines = Array.from(lineEls).map(el => el.textContent);
+    
+    // Scoped search: find the start of the current function
+    const funcNameNeedle = currentLang === 'csharp' 
+        ? `${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(` 
+        : `${currentTraversal}(`;
+    const funcStart = lines.findIndex(l => l.includes(funcNameNeedle) && (l.includes('function') || l.includes('def') || l.includes('static void')));
+    
     let targetIndex = -1;
     
     if (type === 'visit') {
-        targetIndex = lines.findIndex(l => l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine'));
+        targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine')));
     } else if (side === 'left' || side === 'right' || side === 'middle') {
         const needle = side === 'left' ? '.left' : (side === 'right' ? '.right' : '.middle');
         const capNeedle = needle.charAt(0) + needle.charAt(1).toUpperCase() + needle.slice(2); // .Left, .Middle, .Right
         
-        targetIndex = lines.findIndex(l => l.includes(needle) || l.includes(capNeedle));
+        targetIndex = lines.findIndex((l, i) => i >= funcStart && (l.includes(needle) || l.includes(capNeedle)));
         
         if (targetIndex === -1) {
-            // Fallback for loop-based snippets or generic calls
-            targetIndex = lines.findIndex(l => 
+            // Fallback for loop-based snippets or generic calls within the function
+            targetIndex = lines.findIndex((l, i) => i >= funcStart && (
                 l.includes('children') || l.includes('child') || 
-                l.includes(`${currentTraversal}(`) || 
-                l.includes(`${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(`)
-            );
+                l.includes(funcNameNeedle)
+            ));
         }
     }
 
     if (targetIndex !== -1 && lineEls[targetIndex]) {
         lineEls[targetIndex].classList.add('highlight');
+        // Scroll highlight into view within the code panel
+        lineEls[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
@@ -301,9 +337,11 @@ function refreshStack() {
 }
 
 function updateCode() {
-    const maxChildren = parseInt(document.getElementById('max-child-slider').value);
-    const snippets = getSnippets(currentLang, currentTraversal, maxChildren);
-    els.codeDisplay.innerHTML = snippets.split('\n')
+    const maxChildren = parseInt(els.maxChild.value);
+    const focusMode = els.checkFocus.checked;
+    const code = getSnippets(currentLang, currentTraversal, tree, maxChildren, focusMode);
+    
+    els.codeDisplay.innerHTML = code.split('\n')
         .map(line => `<span class="code-line">${line}</span>`)
         .join('\n');
 }

@@ -87,7 +87,7 @@ main {
 #visualization {
     flex: 1;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
     background: rgba(0, 0, 0, 0.2);
 }
 
@@ -109,10 +109,51 @@ main {
     min-width: 250px;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    overflow-y: auto;
+    padding: 0;
+    overflow: hidden;
     border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#code-panel, #stack-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    overflow: hidden;
+}
+
+#code-panel {
+    flex: 1.5; /* Default ratio */
+    min-height: 150px;
+}
+
+#stack-panel {
+    flex: 1;
+    min-height: 150px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#v-resizer {
+    height: 4px;
+    cursor: row-resize;
+    background: rgba(255, 255, 255, 0.05);
+    transition: background 0.2s, height 0.2s;
+    z-index: 10;
+}
+
+#v-resizer:hover, #v-resizer:active {
+    background: var(--accent-color);
+    height: 6px;
+}
+
+#code-display {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+}
+
+#stack-display {
+    flex: 1;
+    overflow-y: auto;
 }
 
 #tree-canvas {

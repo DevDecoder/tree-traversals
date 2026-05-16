@@ -53,64 +53,69 @@ export class Tree {
     calculatePositions() {
         if (!this.root) return;
 
-        const canvasWidth = 800;
-        const canvasHeight = 600;
+        const baseWidth = 800;
+        const baseHeight = 600;
+        const minLeafSpacing = 60;
+        const minLevelHeight = 80;
         
-        // Calculate max depth for vertical spacing
+        // 1. Calculate subtree width (number of leaves)
+        const calculateSubtreeWidth = (node) => {
+            if (node.children.length === 0) {
+                node.width = 1;
+                return 1;
+            }
+            let width = 0;
+            node.children.forEach(child => {
+                width += calculateSubtreeWidth(child);
+            });
+            node.width = width;
+            return width;
+        };
+        const totalLeaves = calculateSubtreeWidth(this.root);
+
+        // 2. Find max depth
         let maxDepth = 0;
         const findMaxDepth = (node, depth) => {
-            if (!node) return;
             maxDepth = Math.max(maxDepth, depth);
-            node.children.forEach(child => findMaxDepth(child, depth + 1));
+            node.children.forEach(c => findMaxDepth(c, depth + 1));
         };
         findMaxDepth(this.root, 1);
-        
-        const levelHeight = canvasHeight / (maxDepth + 1);
-        
-        // In-order traversal to assign X coordinates
-        // This ensures that for any node, all nodes in its left subtree are to its left,
-        // and all nodes in its right subtree are to its right.
-        let xCounter = 0;
-        const assignX = (node, depth) => {
-            if (!node) return;
-            
-            // For n-ary, we visit: first_child, root, rest_of_children
-            if (node.children.length > 0) {
-                assignX(node.children[0], depth + 1);
-            }
-            
-            node.x = ++xCounter;
-            node.y = depth * levelHeight;
-            
-            for (let i = 1; i < node.children.length; i++) {
-                assignX(node.children[i], depth + 1);
-            }
-        };
 
-        assignX(this.root, 1);
-
-        // Normalize X coordinates to fit canvas with padding
-        const paddingX = 80;
-        const availableWidth = canvasWidth - paddingX * 2;
-        const xSpacing = xCounter > 1 ? availableWidth / (xCounter - 1) : 0;
+        // 3. Determine dynamic dimensions
+        this.currentWidth = Math.max(baseWidth, totalLeaves * minLeafSpacing);
+        this.currentHeight = Math.max(baseHeight, maxDepth * minLevelHeight);
         
-        // Normalize Y coordinates with padding
+        const canvasWidth = this.currentWidth;
+        const canvasHeight = this.currentHeight;
+
+        // 4. Proportional allocation
+        const paddingX = 40;
         const topPadding = 60;
         const bottomPadding = 60;
-        const availableHeight = canvasHeight - topPadding - bottomPadding;
-        const ySpacing = maxDepth > 1 ? availableHeight / (maxDepth - 1) : 0;
+        const levelHeight = maxDepth > 1 ? (canvasHeight - topPadding - bottomPadding) / (maxDepth - 1) : 0;
+        const leafSpacing = (canvasWidth - paddingX * 2) / totalLeaves;
 
-        this.nodes.forEach(node => {
-            node.x = paddingX + (node.x - 1) * xSpacing;
-            if (xCounter === 1) node.x = canvasWidth / 2;
-            
-            node.y = topPadding + (node.depth - 1) * ySpacing;
-            if (maxDepth === 1) node.y = canvasHeight / 2;
-        });
+        const assign = (node, startX, depth) => {
+            const allocatedWidth = node.width * leafSpacing;
+            node.x = startX + allocatedWidth / 2;
+            node.y = topPadding + (depth - 1) * levelHeight;
+
+            let currentX = startX;
+            node.children.forEach(child => {
+                assign(child, currentX, depth + 1);
+                currentX += child.width * leafSpacing;
+            });
+        };
+
+        assign(this.root, paddingX, 1);
+        if (maxDepth === 1) this.root.y = canvasHeight / 2;
     }
 
     render(svg) {
         svg.innerHTML = '';
+        svg.setAttribute('viewBox', `0 0 ${this.currentWidth || 800} ${this.currentHeight || 600}`);
+        svg.style.width = `${this.currentWidth || 800}px`;
+        svg.style.height = `${this.currentHeight || 600}px`;
         if (!this.root) return;
 
         const drawEdges = (node) => {
