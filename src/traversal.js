@@ -1,33 +1,37 @@
 export function* preorder(node) {
     if (!node) return;
     yield { type: 'enter', node };
-    yield { type: 'visit', node, side: 'root' };
-    yield { type: 'move', node, side: 'left' };
-    yield* preorder(node.left);
-    yield { type: 'move', node, side: 'right' };
-    yield* preorder(node.right);
+    yield { type: 'visit', node };
+    for (let i = 0; i < node.children.length; i++) {
+        yield { type: 'move', node, side: i === 0 ? 'left' : (i === node.children.length - 1 ? 'right' : 'middle') };
+        yield* preorder(node.children[i]);
+    }
     yield { type: 'exit', node };
 }
 
 export function* inorder(node) {
     if (!node) return;
     yield { type: 'enter', node };
-    yield { type: 'move', node, side: 'left' };
-    yield* inorder(node.left);
-    yield { type: 'visit', node, side: 'root' };
-    yield { type: 'move', node, side: 'right' };
-    yield* inorder(node.right);
+    if (node.children.length > 0) {
+        yield { type: 'move', node, side: 'left' };
+        yield* inorder(node.children[0]);
+    }
+    yield { type: 'visit', node };
+    for (let i = 1; i < node.children.length; i++) {
+        yield { type: 'move', node, side: i === node.children.length - 1 ? 'right' : 'middle' };
+        yield* inorder(node.children[i]);
+    }
     yield { type: 'exit', node };
 }
 
 export function* postorder(node) {
     if (!node) return;
     yield { type: 'enter', node };
-    yield { type: 'move', node, side: 'left' };
-    yield* postorder(node.left);
-    yield { type: 'move', node, side: 'right' };
-    yield* postorder(node.right);
-    yield { type: 'visit', node, side: 'root' };
+    for (let i = 0; i < node.children.length; i++) {
+        yield { type: 'move', node, side: i === 0 ? 'left' : (i === node.children.length - 1 ? 'right' : 'middle') };
+        yield* postorder(node.children[i]);
+    }
+    yield { type: 'visit', node };
     yield { type: 'exit', node };
 }
 

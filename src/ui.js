@@ -166,10 +166,13 @@ async function handleStep(step) {
     
     if (type === 'visit') {
         targetIndex = lines.findIndex(l => l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine'));
-    } else if (side === 'left') {
-        targetIndex = lines.findIndex(l => l.includes('.left') || l.includes('.Left'));
-    } else if (side === 'right') {
-        targetIndex = lines.findIndex(l => l.includes('.right') || l.includes('.Right'));
+    } else if (side === 'left' || side === 'right' || side === 'middle') {
+        // Find line with function call or loop
+        targetIndex = lines.findIndex(l => 
+            l.includes(`${currentTraversal}(`) || 
+            l.includes(`${currentTraversal.charAt(0).toUpperCase() + currentTraversal.slice(1)}(`) ||
+            l.includes('children') || l.includes('child')
+        );
     }
 
     if (targetIndex !== -1 && lineEls[targetIndex]) {
@@ -222,13 +225,18 @@ function refreshStack() {
     const frames = els.stackDisplay.querySelectorAll('.stack-frame');
     frames.forEach(frame => {
         if (frame.dataset.nodeValue) {
+            const printResult = frame.querySelector('.print-result');
             frame.textContent = getStackLabel(frame.dataset.nodeValue);
+            if (printResult) {
+                frame.appendChild(printResult);
+            }
         }
     });
 }
 
 function updateCode() {
-    const snippets = getSnippets(currentLang, currentTraversal);
+    const maxChildren = parseInt(document.getElementById('max-child-slider').value);
+    const snippets = getSnippets(currentLang, currentTraversal, maxChildren);
     els.codeDisplay.innerHTML = snippets.split('\n')
         .map(line => `<span class="code-line">${line}</span>`)
         .join('\n');

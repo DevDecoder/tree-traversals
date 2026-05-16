@@ -2,8 +2,7 @@ export class Node {
     constructor(id, value) {
         this.id = id;
         this.value = value;
-        this.left = null;
-        this.right = null;
+        this.children = [];
         this.x = 0;
         this.y = 0;
         this.depth = 0;
@@ -33,16 +32,15 @@ export class Tree {
             if (depth >= maxDepth) {
                 shouldHaveChildren = false;
             } else if (depth >= minDepth) {
-                // After reaching minDepth, we have a chance to stop
-                // But if minChildren is high, we're less likely to stop?
-                // For now, let's just use a fixed probability to keep it simple
                 shouldHaveChildren = Math.random() > 0.4;
             }
 
             if (shouldHaveChildren) {
                 const numChildren = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
-                if (numChildren >= 1) node.left = createNode(depth + 1);
-                if (numChildren >= 2) node.right = createNode(depth + 1);
+                for (let i = 0; i < numChildren; i++) {
+                    const child = createNode(depth + 1);
+                    if (child) node.children.push(child);
+                }
             }
 
             return node;
@@ -64,9 +62,13 @@ export class Tree {
             node.x = (left + right) / 2;
             node.y = y;
             
-            const offset = (right - left) / 2;
-            assignPositions(node.left, left, node.x, y + levelHeight);
-            assignPositions(node.right, node.x, right, y + levelHeight);
+            const numChildren = node.children.length;
+            if (numChildren > 0) {
+                const childWidth = (right - left) / numChildren;
+                node.children.forEach((child, i) => {
+                    assignPositions(child, left + i * childWidth, left + (i + 1) * childWidth, y + levelHeight);
+                });
+            }
         };
 
         assignPositions(this.root, 0, canvasWidth, 60);
@@ -76,27 +78,17 @@ export class Tree {
         svg.innerHTML = '';
         if (!this.root) return;
 
-        // Draw edges first so they are behind nodes
         const drawEdges = (node) => {
             if (!node) return;
-            if (node.left) {
+            node.children.forEach(child => {
                 this.createSVGElement('line', {
                     x1: node.x, y1: node.y,
-                    x2: node.left.x, y2: node.left.y,
+                    x2: child.x, y2: child.y,
                     class: 'edge',
-                    id: `edge-${node.id}-${node.left.id}`
+                    id: `edge-${node.id}-${child.id}`
                 }, svg);
-                drawEdges(node.left);
-            }
-            if (node.right) {
-                this.createSVGElement('line', {
-                    x1: node.x, y1: node.y,
-                    x2: node.right.x, y2: node.right.y,
-                    class: 'edge',
-                    id: `edge-${node.id}-${node.right.id}`
-                }, svg);
-                drawEdges(node.right);
-            }
+                drawEdges(child);
+            });
         };
 
         const drawNodes = (node) => {
@@ -116,8 +108,7 @@ export class Tree {
             }, group);
             text.textContent = node.value;
 
-            drawNodes(node.left);
-            drawNodes(node.right);
+            node.children.forEach(child => drawNodes(child));
         };
 
         drawEdges(this.root);
