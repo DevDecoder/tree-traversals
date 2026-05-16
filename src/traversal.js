@@ -1,7 +1,9 @@
 export function* preorder(node) {
     if (!node) return;
-    yield { type: 'visit', node, side: 'left' };
+    yield { type: 'visit', node, side: 'root' };
+    yield { type: 'move', node, side: 'left' };
     yield* preorder(node.left);
+    yield { type: 'move', node, side: 'right' };
     yield* preorder(node.right);
 }
 
@@ -9,7 +11,8 @@ export function* inorder(node) {
     if (!node) return;
     yield { type: 'move', node, side: 'left' };
     yield* inorder(node.left);
-    yield { type: 'visit', node, side: 'bottom' };
+    yield { type: 'visit', node, side: 'root' };
+    yield { type: 'move', node, side: 'right' };
     yield* inorder(node.right);
 }
 
@@ -19,7 +22,7 @@ export function* postorder(node) {
     yield* postorder(node.left);
     yield { type: 'move', node, side: 'right' };
     yield* postorder(node.right);
-    yield { type: 'visit', node, side: 'right' };
+    yield { type: 'visit', node, side: 'root' };
 }
 
 export class Animator {

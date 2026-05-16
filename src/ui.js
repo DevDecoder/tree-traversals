@@ -139,22 +139,22 @@ async function handleStep(step) {
     updateStack(node, type);
     
     // Highlight code line based on side
-    const lines = els.codeDisplay.textContent.split('\n');
+    const lineEls = els.codeDisplay.querySelectorAll('.code-line');
+    lineEls.forEach(l => l.classList.remove('highlight'));
+
+    const lines = Array.from(lineEls).map(el => el.textContent);
     let targetIndex = -1;
+    
     if (type === 'visit') {
         targetIndex = lines.findIndex(l => l.includes('console.log') || l.includes('print') || l.includes('Console.WriteLine'));
     } else if (side === 'left') {
-        targetIndex = lines.findIndex(l => l.includes('left'));
+        targetIndex = lines.findIndex(l => l.includes('.left') || l.includes('.Left'));
     } else if (side === 'right') {
-        targetIndex = lines.findIndex(l => l.includes('right'));
+        targetIndex = lines.findIndex(l => l.includes('.right') || l.includes('.Right'));
     }
 
-    if (targetIndex !== -1) {
-        const lineEls = els.codeDisplay.querySelectorAll('.code-line');
-        lineEls.forEach(l => l.classList.remove('highlight'));
-        if (lineEls[targetIndex]) {
-            lineEls[targetIndex].classList.add('highlight');
-        }
+    if (targetIndex !== -1 && lineEls[targetIndex]) {
+        lineEls[targetIndex].classList.add('highlight');
     }
 }
 
