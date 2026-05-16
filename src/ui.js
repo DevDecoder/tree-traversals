@@ -45,39 +45,30 @@ function setupEventListeners() {
         els.childRange.textContent = `${els.minChild.value} - ${els.maxChild.value}`;
     };
 
-    els.minDepth.oninput = (e) => {
-        const val = parseInt(e.target.value);
-        const maxVal = parseInt(els.maxDepth.value);
-        if (val > maxVal) {
-            els.maxDepth.value = val;
+    const syncSliders = (sliderA, sliderB, isMin) => {
+        const valA = parseInt(sliderA.value);
+        const valB = parseInt(sliderB.value);
+        if (isMin) {
+            if (valA > valB) sliderB.value = valA;
+        } else {
+            if (valA < valB) sliderA.value = valA;
         }
         updateRanges();
+    };
+
+    els.minDepth.oninput = (e) => {
+        syncSliders(els.minDepth, els.maxDepth, true);
     };
     els.maxDepth.oninput = (e) => {
-        const val = parseInt(e.target.value);
-        const minVal = parseInt(els.minDepth.value);
-        if (val < minVal) {
-            els.minDepth.value = val;
-        }
-        updateRanges();
+        syncSliders(els.maxDepth, els.minDepth, false);
     };
     els.minChild.oninput = (e) => {
-        const val = parseInt(e.target.value);
-        const maxVal = parseInt(els.maxChild.value);
-        if (val > maxVal) {
-            els.maxChild.value = val;
-        }
-        updateRanges();
+        syncSliders(els.minChild, els.maxChild, true);
         updateCode();
         refreshStack();
     };
     els.maxChild.oninput = (e) => {
-        const val = parseInt(e.target.value);
-        const minVal = parseInt(els.minChild.value);
-        if (val < minVal) {
-            els.minChild.value = val;
-        }
-        updateRanges();
+        syncSliders(els.maxChild, els.minChild, false);
         updateInOrderAvailability();
         updateCode();
         refreshStack();
@@ -222,12 +213,18 @@ function regenerate() {
     const minC = parseInt(els.minChild.value);
     const maxC = parseInt(els.maxChild.value);
     
-    // Safety check: min should not exceed max
+    // Explicitly reset tree state before generation
+    tree.nodes = [];
+    tree.root = null;
+
     tree.generateRandom(
         Math.min(minD, maxD), Math.max(minD, maxD),
         Math.min(minC, maxC), Math.max(minC, maxC)
     );
     tree.render(els.canvas);
+    
+    // Crucial: Update the code snippet to match the brand new tree
+    updateCode();
 }
 
 function reset() {
