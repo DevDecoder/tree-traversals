@@ -137,8 +137,9 @@ export class Tree {
             
             this.createSVGElement('circle', {
                 cx: node.x, cy: node.y, r: 20,
-                class: 'node',
-                id: `node-${node.id}`
+                class: `node ${node.status}`,
+                id: `node-${node.id}`,
+                'data-id': node.id
             }, group);
 
             const text = this.createSVGElement('text', {
