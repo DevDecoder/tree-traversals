@@ -198,15 +198,18 @@ main {
 }
 
 #code-display {
-    flex: 1;
-    overflow: auto; /* Changed from overflow-y to auto */
+    background: rgba(0, 0, 0, 0.3) !important;
+    padding: 1rem 0 !important;
     margin: 0;
-    position: relative;
+    font-size: 0.85rem;
+    flex: 1;
+    overflow: auto; /* Scroll bar lives here */
+    display: block;
 }
 
 #code-display code {
-    display: block;
-    min-width: fit-content;
+    display: inline-block; /* Allow it to be wider than container */
+    min-width: 100%;       /* But at least as wide as container */
 }
 
 #stack-display {
@@ -389,14 +392,7 @@ select {
 }
 
 #code-display {
-    background: rgba(0, 0, 0, 0.3) !important;
-    padding: 1rem 0 !important;
-    border-radius: 0;
-    font-size: 0.85rem;
-    overflow: auto;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    /* Styles moved to line 200 block to consolidate and fix scrollbar logic */
 }
 
 .code-line {
@@ -404,6 +400,7 @@ select {
     padding: 2px 1.5rem;
     border-radius: 0;
     transition: all 0.2s;
+    white-space: pre; /* Ensure spaces aren't collapsed */
 }
 
 .code-line.highlight {
