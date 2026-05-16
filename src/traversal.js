@@ -73,8 +73,10 @@ export class Animator {
         this.timer = setTimeout(() => this.step(), this.speed);
     }
 
-    async manualStep() {
-        if (this.isFinished) return;
+    async manualStep(generator) {
+        if (generator) this.generator = generator;
+        if (!this.generator || this.isFinished) return;
+        
         const { value, done } = this.generator.next();
         if (done) {
             this.isFinished = true;
